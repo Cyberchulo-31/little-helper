@@ -244,6 +244,49 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
 .rq .chat{margin-top:10px}
 .past{display:flex;justify-content:space-between;gap:8px;background:var(--panel-2);border-radius:10px;padding:8px 12px}
 .past b{font-variant-numeric:tabular-nums}
+/* Arena */
+.stat.cup b{color:var(--gold)}
+.avatar.has-art{background:none;clip-path:none}
+.avatar svg{width:52px;height:52px}
+.arena{border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px;
+  background:radial-gradient(600px 260px at 50% 30%,#3a2a8a 0%,transparent 70%),linear-gradient(180deg,#24124f,#140c22);
+  border:2px solid #4b36a3;box-shadow:inset 0 -6px 0 #0d0718}
+.arena-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start}
+.arena h2{font-size:30px}
+.hearts{display:flex;gap:6px;font-size:30px;line-height:1}
+.hearts span{filter:drop-shadow(0 2px 0 #000)}
+.hearts .lost{opacity:.25;filter:grayscale(1)}
+.fight{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:8px}
+.fighter{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.fighter b{font:18px var(--display)}
+.fighter svg{width:min(150px,34vw);height:auto}
+.vs{font:34px var(--display);color:var(--gold);text-shadow:0 3px 0 #7a4a00;align-self:center}
+.hp{width:min(160px,36vw);height:14px;border-radius:99px;background:#2a0f1f;border:2px solid #000;overflow:hidden}
+.hp i{display:block;height:100%;background:linear-gradient(90deg,#ff4d6d,#ff8fa3);transition:width .5s}
+.boss.hit svg{animation:shake .45s}
+.fighter.hurt svg{animation:shake .45s;filter:hue-rotate(-40deg) saturate(2)}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px) rotate(-4deg)}40%{transform:translateX(10px) rotate(4deg)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+.arena-card{background:rgba(20,12,34,.85);border:1px solid var(--line);border-radius:14px;padding:16px}
+.btn.big{font-size:22px;padding:16px 28px;font-family:var(--display);font-weight:400}
+.drop-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+.drop{width:150px;height:150px;border:0;border-radius:28px;font:28px var(--display);color:#fff;
+  background:linear-gradient(160deg,var(--c1,#9d6bff),var(--c2,#5a33b3));box-shadow:0 8px 0 rgba(0,0,0,.4),0 0 40px var(--c1,#9d6bff);transition:transform .1s}
+.drop:active{transform:scale(.94)}
+.drop.wiggle{animation:shake .4s}
+.rarity{font:26px var(--display)}
+.roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.brawler{background:var(--panel-2);border:2px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.brawler svg{width:90px;height:90px}
+.brawler[aria-pressed="true"]{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,207,90,.25)}
+.brawler.locked svg{filter:brightness(0) opacity(.45)}
+.brawler small{color:var(--muted)}
+.road-wrap{overflow-x:auto;padding-bottom:6px}
+.road{display:flex;gap:10px;min-width:max-content}
+.stop{width:110px;flex:none;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center;display:flex;flex-direction:column;gap:4px;align-items:center}
+.stop.got{border-color:var(--gold)}
+.stop b{font:20px var(--display);color:var(--gold);font-variant-numeric:tabular-nums}
+.stop small{color:var(--muted);font-size:13px}
+@media (max-width:520px){.vs{font-size:24px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -266,6 +309,7 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
     <div class="stats">
       <div class="stat lvl"><span class="px muted">Level</span><b id="lvl">1</b></div>
       <div class="stat fire"><span class="px muted">Streak</span><b id="streak">0</b></div>
+      <div class="stat cup"><span class="px muted">Trophies</span><b id="cups">0</b></div>
       <button class="icon-btn px" id="soundBtn" aria-pressed="true" title="Sound effects">Sound on</button>
     </div>
   </div>
@@ -274,11 +318,12 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
 <main class="wrap">
   <nav class="tabs" role="tablist">
     <button role="tab" id="tab-books" aria-selected="true" data-tab="books">My Books</button>
+    <button role="tab" id="tab-arena" aria-selected="false" data-tab="arena">Quest Day</button>
     <button role="tab" id="tab-buddy" aria-selected="false" data-tab="buddy">Study Buddy</button>
     <button role="tab" id="tab-revision" aria-selected="false" data-tab="revision">Revision</button>
     <button role="tab" id="tab-quests" aria-selected="false" data-tab="quests">Quests</button>
     <button role="tab" id="tab-focus" aria-selected="false" data-tab="focus">Focus</button>
-    <button role="tab" id="tab-trophies" aria-selected="false" data-tab="trophies">Trophies</button>
+    <button role="tab" id="tab-trophies" aria-selected="false" data-tab="trophies">Brawlers</button>
   </nav>
 
   <!-- BOOKS -->
@@ -547,6 +592,62 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
     </aside>
   </section>
 
+  <!-- QUEST DAY -->
+  <section id="view-arena" hidden class="stack">
+    <div class="arena" id="arena">
+      <div class="arena-top">
+        <div>
+          <span class="px" style="color:var(--gold)">Quest Day</span>
+          <h2 id="arenaTitle">Boss battle</h2>
+          <p id="arenaSub" style="margin:0"></p>
+        </div>
+        <div class="hearts" id="hearts" aria-label="Tries left"></div>
+      </div>
+      <div class="fight">
+        <div class="fighter" id="heroSide"><div id="heroArt"></div><b id="heroName2"></b></div>
+        <div class="vs">VS</div>
+        <div class="fighter boss" id="bossSide">
+          <div id="bossArt"></div><b id="bossName"></b>
+          <div class="hp"><i id="bossHp"></i></div>
+        </div>
+      </div>
+
+      <div class="arena-card stack" id="arenaStart">
+        <p id="arenaIntro" style="margin:0"></p>
+        <div class="row" style="justify-content:center">
+          <button class="btn gold big" id="arenaGo">Start the battle!</button>
+        </div>
+        <span class="muted center" id="arenaStatus" role="status"></span>
+      </div>
+
+      <div class="arena-card stack" id="arenaPlay" hidden>
+        <span class="px muted" id="arenaProg"></span>
+        <div class="qbox" id="arenaQ"></div>
+        <div class="stack" id="arenaAns"></div>
+        <div class="notice" id="arenaHint" hidden></div>
+        <div class="row"><button class="btn" id="arenaSubmit">Attack!</button></div>
+      </div>
+
+      <div class="arena-card stack center" id="arenaEnd" hidden>
+        <h2 id="arenaEndTitle"></h2>
+        <p id="arenaEndMsg" style="margin:0"></p>
+        <div id="dropBox" class="drop-wrap" hidden>
+          <button class="drop" id="dropBtn" aria-label="Open your mystery drop"><span id="dropLabel">TAP!</span></button>
+          <div id="dropReward" class="stack" hidden></div>
+        </div>
+        <div class="stack" id="arenaReview" style="text-align:left"></div>
+      </div>
+    </div>
+    <div class="panel stack">
+      <h3 style="font-size:20px">How Quest Day works</h3>
+      <ul style="margin:0;padding-left:1.2em" class="muted">
+        <li>Every day a new boss shows up, built from the homework you did <b style="color:var(--text)">yesterday</b>.</li>
+        <li>Each right answer hits the boss. You have <b style="color:var(--text)">3 hearts</b>. A wrong answer costs a heart, and you get a hint to try again.</li>
+        <li>Beat the boss before your hearts run out to win a <b style="color:var(--gold)">Mystery Drop</b> and your prize!</li>
+      </ul>
+    </div>
+  </section>
+
   <!-- REVISION -->
   <section id="view-revision" class="grid2" hidden>
     <div class="stack">
@@ -639,9 +740,26 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
 
   <!-- TROPHIES -->
   <section id="view-trophies" hidden class="stack">
-    <div class="section-title"><h2>Trophy room</h2><span class="muted" id="trophyCount"></span></div>
+    <div class="panel stack">
+      <div class="section-title" style="margin:0"><h2>Your brawlers</h2><span class="px muted">Tap one to play as it</span></div>
+      <div class="roster" id="roster"></div>
+    </div>
+    <div class="panel stack">
+      <div class="section-title" style="margin:0"><h2>Trophy road</h2><span class="px muted" id="roadNext"></span></div>
+      <div class="road-wrap"><div class="road" id="road"></div></div>
+    </div>
+    <div class="section-title"><h2>Badges</h2><span class="muted" id="trophyCount"></span></div>
     <div class="badges" id="badgeGrid"></div>
     <div class="panel row" style="justify-content:space-around;text-align:center" id="statRow"></div>
+    <details class="panel stack" id="parentBox">
+      <summary><h3 style="display:inline;font-size:20px">For parents</h3></summary>
+      <div class="stack" style="margin-top:12px">
+        <label class="lbl"><span class="px muted">Quest Day prize (shown when he beats the boss)</span>
+          <input class="field" id="prizeText" maxlength="120" placeholder="e.g. 30 minutes of game time"></label>
+        <div class="row"><button class="btn ghost" id="rematchBtn">Give him another try at today's boss</button></div>
+        <div class="stack" id="prizeLog"></div>
+      </div>
+    </details>
     <div class="row"><button class="btn ghost" id="resetAll">Reset all progress</button><span id="resetConfirm" hidden class="row"><span>Really erase everything?</span><button class="btn" id="resetYes">Yes, erase</button><button class="btn ghost" id="resetNo">Keep it</button></span></div>
   </section>
 </main>
@@ -663,7 +781,8 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
 /* ---------- state ---------- */
 const KEY = "homework-quest-v1";
 const uid = () => Math.random().toString(36).slice(2, 9);
-const today = () => new Date().toISOString().slice(0, 10);
+const dayKey = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+const today = () => dayKey(Date.now());
 const addDays = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
 
 function exampleQuests() {
@@ -681,7 +800,7 @@ const GRADES = ["A", "B", "C"];
 const GRADE_NAME = { A: "Α΄ Γυμνασίου", B: "Β΄ Γυμνασίου", C: "Γ΄ Γυμνασίου" };
 const SAMPLE_BOOK = () => ({ id: "sample", title: "Try it: sample page", subject: "Mathematics (Μαθηματικά)", type: "sample", pages: 1, lastPage: 1, hl: [] });
 const fresh = () => ({ name: "Player 1", xp: 0, streak: 0, lastDay: null, quests: exampleQuests(), active: null,
-  focusRuns: 0, stepsDone: 0, questsDone: 0, quizRight: 0, badges: [], parked: [], sound: true, grade: "A", guide: null, books: [SAMPLE_BOOK()], helpLang: "English", tests: [], currentTest: null, testDate: "", revSubject: "" });
+  focusRuns: 0, stepsDone: 0, questsDone: 0, quizRight: 0, badges: [], parked: [], sound: true, grade: "A", guide: null, books: [SAMPLE_BOOK()], helpLang: "English", tests: [], currentTest: null, testDate: "", revSubject: "", cups: 0, unlocked: ["zip"], brawler: "zip", daily: null, prize: "", prizes: [] });
 
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch { S = fresh(); }
@@ -703,6 +822,7 @@ const el = (tag, attrs = {}, ...kids) => {
   for (const c of kids.flat()) if (c != null) n.append(c.nodeType ? c : document.createTextNode(c));
   return n;
 };
+{ const rc = Element.prototype.replaceChildren; Element.prototype.replaceChildren = function (...k) { return rc.apply(this, k.filter(x => x != null)); }; }
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 function md(text) {
   const lines = esc(text).split("\n"); let html = "", list = null;
@@ -779,7 +899,7 @@ function gainXP(n, from) {
 function markStreak() {
   const t = today(); if (S.lastDay === t) return;
   const y = new Date(); y.setDate(y.getDate() - 1);
-  S.streak = S.lastDay === y.toISOString().slice(0, 10) ? S.streak + 1 : 1; S.lastDay = t;
+  S.streak = S.lastDay === dayKey(y) ? S.streak + 1 : 1; S.lastDay = t;
 }
 function renderHUD() {
   const { lvl, into, need } = levelInfo(S.xp);
@@ -787,9 +907,10 @@ function renderHUD() {
   $("#xpText").textContent = `${into} / ${need}`; $("#xpBar").style.width = (into / need * 100) + "%";
   $("#xpBarWrap").setAttribute("aria-valuenow", Math.round(into / need * 100));
   const y = new Date(); y.setDate(y.getDate() - 1);
-  const alive = S.lastDay === today() || S.lastDay === y.toISOString().slice(0, 10);
+  const alive = S.lastDay === today() || S.lastDay === dayKey(y);
   $("#streak").textContent = alive ? S.streak : 0;
-  $("#avatar").textContent = (S.name.trim()[0] || "P").toUpperCase();
+  const av = $("#avatar"); av.classList.add("has-art"); av.innerHTML = brawlerSVG(heroB());
+  $("#cups").textContent = S.cups;
   $("#soundBtn").textContent = S.sound ? "Sound on" : "Sound off"; $("#soundBtn").setAttribute("aria-pressed", S.sound);
 }
 $("#heroName").value = S.name;
@@ -819,7 +940,8 @@ function checkBadges() {
 /* ---------- tabs ---------- */
 function showTab(name) {
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === name));
-  for (const v of ["books", "revision", "quests", "focus", "buddy", "trophies"]) $("#view-" + v).hidden = v !== name;
+  for (const v of ["books", "arena", "revision", "quests", "focus", "buddy", "trophies"]) $("#view-" + v).hidden = v !== name;
+  if (name === "arena") renderArena();
   if (name === "revision") renderRevision();
   if (name === "books" && R.book) drawHighlights();
   if (name === "focus") renderFocus(); if (name === "buddy") renderBuddy(); if (name === "trophies") renderTrophies();
@@ -841,7 +963,7 @@ function toggleStep(q, s, btn) {
   s.done = !s.done; q.touched = Date.now();
   if (s.done) {
     s.doneAt = Date.now();
-    S.stepsDone++; gainXP(10, btn);
+    S.stepsDone++; gainXP(10, btn); addCups(2);
     if (q.steps.length && q.steps.every(x => x.done) && !q.cleared) {
       q.cleared = true; q.clearedAt = Date.now(); S.questsDone++; confetti(160); beep(SFX.clear);
       setTimeout(() => gainXP(50, btn), 500); toast(`Quest cleared: ${q.title}!`);
@@ -1210,6 +1332,7 @@ $("#parkForm").addEventListener("submit", e => { e.preventDefault(); const t = $
 
 /* ---------- Trophies ---------- */
 function renderTrophies() {
+  renderBrawlers();
   $("#badgeGrid").replaceChildren(...BADGES.map(([id, name, desc]) => el("div", { class: "badge" + (S.badges.includes(id) ? " got" : "") }, el("div", { class: "gem" }), el("b", {}, name), el("span", { class: "muted", style: "font-size:14px" }, desc))));
   $("#trophyCount").textContent = `${S.badges.length} of ${BADGES.length} unlocked`;
   const stat = (n, l) => el("div", {}, el("div", { style: "font:32px var(--display)" }, String(n)), el("div", { class: "px muted" }, l));
@@ -1691,7 +1814,7 @@ ${JSON.stringify(toCheck.map(({ it, i }) => ({ i, question: it.q, expected: it.a
   if (S.tests.length > 40) S.tests.splice(0, S.tests.length - 40);
   S.currentTest = null; save();
   btn.disabled = false;
-  gainXP(20 + correct * 5, $("#testNext"));
+  gainXP(20 + correct * 5, $("#testNext")); addCups(correct * 2);
   if (correct / t.items.length >= 0.8) confetti(180);
   showResults(S.tests.at(-1)); showRev("results"); renderRevision();
 }
@@ -1775,6 +1898,245 @@ $("#restoreYes").onclick = () => {
   save(); $("#heroName").value = S.name; renderAll(); toast("Backup restored!");
 };
 document.querySelector('label[for="restoreFile"]').addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#restoreFile").click(); } });
+
+/* ---------- Brawlers (original characters) ---------- */
+const BRAWLERS = [
+  { id: "zip", name: "Zip", at: 0, skin: "#f6c9a0", shirt: "#2d6cdf", hair: "#ffd23f", kind: "spiky", line: "Fast as lightning" },
+  { id: "nova", name: "Nova", at: 50, skin: "#e8b48c", shirt: "#7b2cbf", hair: "#c9b8ff", kind: "helmet", line: "Space explorer" },
+  { id: "blaze", name: "Blaze", at: 120, skin: "#f1c27d", shirt: "#d62828", hair: "#ff7b00", kind: "flame", line: "Hot-headed hero" },
+  { id: "frost", name: "Frostbyte", at: 220, skin: "#ffd9c0", shirt: "#48cae4", hair: "#0077b6", kind: "beanie", line: "Cool under pressure" },
+  { id: "rexy", name: "Rexy", at: 350, skin: "#c68642", shirt: "#2a9d8f", hair: "#52b788", kind: "dino", line: "Tiny arms, big brain" },
+  { id: "gizmo", name: "Gizmo", at: 500, skin: "#adb5bd", shirt: "#495057", hair: "#ffd23f", kind: "robot", line: "Calculates everything" },
+  { id: "luna", name: "Luna", at: 700, skin: "#e0ac69", shirt: "#240046", hair: "#9d4edd", kind: "hood", line: "Legendary night mage" },
+];
+function brawlerSVG(b) {
+  const eyes = b.kind === "robot"
+    ? `<rect x="36" y="46" width="48" height="16" rx="8" fill="#111"/><rect x="42" y="50" width="14" height="8" rx="4" fill="#5fe3a8"/><rect x="64" y="50" width="14" height="8" rx="4" fill="#5fe3a8"/>`
+    : `<ellipse cx="48" cy="54" rx="7" ry="9" fill="#fff"/><ellipse cx="72" cy="54" rx="7" ry="9" fill="#fff"/><circle cx="50" cy="56" r="4" fill="#1a1a1a"/><circle cx="74" cy="56" r="4" fill="#1a1a1a"/><circle cx="51" cy="54" r="1.4" fill="#fff"/><circle cx="75" cy="54" r="1.4" fill="#fff"/><path d="M40 43 l14 3 M80 43 l-14 3" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>`;
+  const mouth = `<path d="M50 70 q10 9 20 0" stroke="#1a1a1a" stroke-width="3" fill="#fff" stroke-linecap="round"/>`;
+  const head = b.kind === "robot" ? `<rect x="26" y="26" width="68" height="60" rx="14" fill="${b.skin}" stroke="#1a1a1a" stroke-width="3"/>` : `<circle cx="60" cy="56" r="34" fill="${b.skin}" stroke="#1a1a1a" stroke-width="3"/>`;
+  const top = {
+    spiky: `<path d="M26 48 L30 18 L42 34 L50 10 L60 30 L72 8 L78 32 L92 16 L94 48 Q60 30 26 48Z" fill="${b.hair}" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>`,
+    helmet: `<circle cx="60" cy="56" r="44" fill="${b.hair}" fill-opacity=".35" stroke="#fff" stroke-width="4"/><circle cx="92" cy="22" r="6" fill="#fff"/><path d="M92 28 v8" stroke="#fff" stroke-width="3"/>`,
+    flame: `<path d="M28 46 Q22 20 40 24 Q38 6 56 16 Q62 0 72 18 Q90 8 86 30 Q100 32 92 48 Q60 32 28 46Z" fill="${b.hair}" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/><path d="M48 30 Q52 18 60 26 Q66 16 70 30" fill="#ffd23f"/>`,
+    beanie: `<path d="M24 44 Q26 12 60 12 Q94 12 96 44Z" fill="${b.hair}" stroke="#1a1a1a" stroke-width="3"/><rect x="22" y="38" width="76" height="12" rx="6" fill="#fff" stroke="#1a1a1a" stroke-width="3"/><circle cx="60" cy="10" r="8" fill="#fff" stroke="#1a1a1a" stroke-width="3"/>`,
+    dino: `<path d="M20 60 Q18 14 60 14 Q102 14 100 60 L92 60 Q90 30 60 30 Q30 30 28 60Z" fill="${b.hair}" stroke="#1a1a1a" stroke-width="3"/><path d="M44 16 l6 -12 l6 12 M58 14 l6 -12 l6 12 M72 16 l6 -10 l4 12" fill="#ffd23f" stroke="#1a1a1a" stroke-width="2.5" stroke-linejoin="round"/><path d="M30 34 l6 4 l-8 3 z M90 34 l-6 4 l8 3z" fill="#fff"/>`,
+    robot: `<path d="M60 26 V12" stroke="#1a1a1a" stroke-width="3"/><circle cx="60" cy="10" r="6" fill="${b.hair}" stroke="#1a1a1a" stroke-width="3"/>`,
+    hood: `<path d="M18 70 Q14 10 60 8 Q106 10 102 70 L92 70 Q92 32 60 32 Q28 32 28 70Z" fill="${b.hair}" stroke="#1a1a1a" stroke-width="3"/><path d="M84 18 a10 10 0 1 0 8 14 a8 8 0 1 1 -8 -14z" fill="#ffd23f"/>`,
+  }[b.kind];
+  const body = `<path d="M34 92 Q36 84 60 84 Q84 84 86 92 L90 124 Q60 132 30 124Z" fill="${b.shirt}" stroke="#1a1a1a" stroke-width="3"/>
+    <rect x="40" y="122" width="14" height="14" rx="4" fill="#1a1a1a"/><rect x="66" y="122" width="14" height="14" rx="4" fill="#1a1a1a"/>
+    <circle cx="26" cy="104" r="8" fill="${b.skin}" stroke="#1a1a1a" stroke-width="3"/><circle cx="94" cy="104" r="8" fill="${b.skin}" stroke="#1a1a1a" stroke-width="3"/>
+    ${b.id === "zip" ? `<path d="M62 92 l-8 14 h8 l-6 14 l14 -18 h-8 l6 -10z" fill="#ffd23f" stroke="#1a1a1a" stroke-width="2"/>` : ""}`;
+  return `<svg viewBox="0 0 120 140" role="img" aria-label="${b.name}">${body}${b.kind === "helmet" ? "" : ""}${head}${eyes}${mouth}${top}</svg>`;
+}
+const BOSSES = [
+  { name: "Mega Bot", svg: `<svg viewBox="0 0 140 140" role="img" aria-label="Mega Bot"><rect x="20" y="30" width="100" height="80" rx="16" fill="#8d99ae" stroke="#111" stroke-width="4"/><rect x="34" y="50" width="72" height="24" rx="10" fill="#111"/><circle cx="54" cy="62" r="7" fill="#ff4d6d"/><circle cx="86" cy="62" r="7" fill="#ff4d6d"/><rect x="46" y="86" width="48" height="10" rx="4" fill="#111"/><path d="M52 86v10M62 86v10M72 86v10M82 86v10" stroke="#8d99ae" stroke-width="3"/><path d="M70 30V12" stroke="#111" stroke-width="4"/><circle cx="70" cy="10" r="7" fill="#ff4d6d" stroke="#111" stroke-width="3"/><rect x="4" y="56" width="16" height="36" rx="6" fill="#6c757d" stroke="#111" stroke-width="3"/><rect x="120" y="56" width="16" height="36" rx="6" fill="#6c757d" stroke="#111" stroke-width="3"/><rect x="36" y="110" width="22" height="20" rx="5" fill="#495057" stroke="#111" stroke-width="3"/><rect x="82" y="110" width="22" height="20" rx="5" fill="#495057" stroke="#111" stroke-width="3"/></svg>` },
+  { name: "Slime King", svg: `<svg viewBox="0 0 140 140" role="img" aria-label="Slime King"><path d="M14 126 Q10 60 70 50 Q130 60 126 126Z" fill="#70e000" stroke="#111" stroke-width="4"/><path d="M40 50 l8 -26 l14 16 l8 -22 l8 22 l14 -16 l8 26z" fill="#ffd23f" stroke="#111" stroke-width="4" stroke-linejoin="round"/><circle cx="52" cy="84" r="10" fill="#fff" stroke="#111" stroke-width="3"/><circle cx="88" cy="84" r="10" fill="#fff" stroke="#111" stroke-width="3"/><circle cx="54" cy="86" r="4" fill="#111"/><circle cx="86" cy="86" r="4" fill="#111"/><path d="M50 106 q20 12 40 0" stroke="#111" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="30" cy="110" r="5" fill="#ccff33"/><circle cx="110" cy="100" r="4" fill="#ccff33"/></svg>` },
+  { name: "Rock Golem", svg: `<svg viewBox="0 0 140 140" role="img" aria-label="Rock Golem"><path d="M36 24 L104 20 L118 70 L100 118 L40 120 L22 70Z" fill="#a47148" stroke="#111" stroke-width="4" stroke-linejoin="round"/><path d="M40 56 l20 6 M100 56 l-20 6" stroke="#111" stroke-width="5" stroke-linecap="round"/><circle cx="54" cy="70" r="7" fill="#ff9f1c"/><circle cx="86" cy="70" r="7" fill="#ff9f1c"/><path d="M50 96 h40" stroke="#111" stroke-width="5" stroke-linecap="round"/><path d="M60 30 l6 14 M92 88 l10 6 M34 90 l10 -4" stroke="#6f4518" stroke-width="3"/><circle cx="12" cy="80" r="12" fill="#a47148" stroke="#111" stroke-width="4"/><circle cx="128" cy="80" r="12" fill="#a47148" stroke="#111" stroke-width="4"/></svg>` },
+  { name: "Shadow Bat", svg: `<svg viewBox="0 0 140 140" role="img" aria-label="Shadow Bat"><path d="M70 40 Q30 10 4 40 Q20 50 18 70 Q34 60 46 74 Q54 60 70 70 Q86 60 94 74 Q106 60 122 70 Q120 50 136 40 Q110 10 70 40Z" fill="#3c096c" stroke="#111" stroke-width="4" stroke-linejoin="round"/><ellipse cx="70" cy="76" rx="28" ry="32" fill="#5a189a" stroke="#111" stroke-width="4"/><path d="M52 50 l6 -16 l8 14 M88 50 l-6 -16 l-8 14" fill="#5a189a" stroke="#111" stroke-width="3"/><circle cx="60" cy="72" r="6" fill="#ffd23f"/><circle cx="80" cy="72" r="6" fill="#ffd23f"/><path d="M60 92 l4 8 l4 -8 M72 92 l4 8 l4 -8" fill="#fff" stroke="#111" stroke-width="2"/></svg>` },
+];
+const heroB = () => BRAWLERS.find(b => b.id === S.brawler && S.unlocked.includes(b.id)) || BRAWLERS[0];
+function addCups(n, from) {
+  if (!n) return;
+  const before = new Set(S.unlocked);
+  S.cups += n;
+  for (const b of BRAWLERS) if (S.cups >= b.at && !S.unlocked.includes(b.id)) S.unlocked.push(b.id);
+  const fresh = S.unlocked.filter(id => !before.has(id));
+  if (fresh.length) { const b = BRAWLERS.find(x => x.id === fresh[0]); setTimeout(() => { toast(`New brawler unlocked: ${b.name}!`); confetti(120); beep(SFX.up); }, 900); }
+  if (from) setTimeout(() => popAt(from, `+${n} 🏆`), 350);
+  save(); renderHUD();
+}
+function renderBrawlers() {
+  $("#roster").replaceChildren(...BRAWLERS.map(b => {
+    const open = S.unlocked.includes(b.id);
+    const card = el("button", { class: "brawler" + (open ? "" : " locked"), "aria-pressed": heroB().id === b.id, disabled: !open, onclick: () => { S.brawler = b.id; save(); renderHUD(); renderBrawlers(); beep(SFX.coin); } },
+      el("b", {}, open ? b.name : "???"), el("small", {}, open ? b.line : `Unlocks at ${b.at} 🏆`));
+    card.insertAdjacentHTML("afterbegin", brawlerSVG(b));
+    return card;
+  }));
+  const next = BRAWLERS.find(b => !S.unlocked.includes(b.id));
+  $("#roadNext").textContent = next ? `${Math.max(0, next.at - S.cups)} 🏆 to ${next.name}` : "Every brawler unlocked!";
+  $("#road").replaceChildren(...BRAWLERS.map(b => {
+    const st = el("div", { class: "stop" + (S.cups >= b.at ? " got" : "") }, el("b", {}, `${b.at}`), el("small", {}, S.unlocked.includes(b.id) ? b.name : "???"));
+    st.insertAdjacentHTML("afterbegin", brawlerSVG(b).replace("<svg ", `<svg width="54" height="62" ${S.unlocked.includes(b.id) ? "" : 'style="filter:brightness(0) opacity(.45)" '}`));
+    return st;
+  }));
+  $("#prizeText").value = S.prize || "";
+  $("#prizeLog").replaceChildren(...[...S.prizes].reverse().slice(0, 10).map(p => el("div", { class: "past" }, el("span", {}, p.prize || "Mystery Drop"), el("small", { class: "muted" }, fmtDate(p.date)))));
+}
+$("#prizeText").addEventListener("input", e => { S.prize = e.target.value.trim(); save(); });
+
+/* ---------- Quest Day ---------- */
+function sourceWork() {
+  const byDay = new Map();
+  for (const q of S.quests) if (!q.example) for (const s of q.steps) if (s.doneAt) {
+    const d = dayKey(s.doneAt); if (d >= today()) continue;
+    if (!byDay.has(d)) byDay.set(d, []); byDay.get(d).push({ q, s });
+  }
+  const days = [...byDay.keys()].sort();
+  if (days.length) { const d = days.at(-1); return { day: d, list: byDay.get(d) }; }
+  const recent = doneWork().slice(0, 2).flatMap(q => q.steps.filter(s => s.done || s.chat?.length > 1).map(s => ({ q, s })));
+  return recent.length ? { day: null, list: recent } : null;
+}
+function dayLabel(d) {
+  if (!d) return "your recent homework";
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  if (d === dayKey(y)) return "yesterday's homework";
+  return "your homework from " + new Date(d + "T12:00").toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" });
+}
+function dailyNow() {
+  if (!S.daily || S.daily.date !== today()) {
+    const src = sourceWork();
+    const boss = BOSSES[Math.floor(Date.now() / 864e5) % BOSSES.length];
+    S.daily = { date: today(), bossName: boss.name, src: src ? { day: src.day, ids: src.list.map(x => [x.q.id, x.s.id]) } : null, items: [], idx: 0, hearts: 3, status: "ready" };
+    save();
+  }
+  return S.daily;
+}
+function renderHearts(h) { $("#hearts").replaceChildren(...[0, 1, 2].map(i => el("span", { class: i < h ? "" : "lost" }, "❤️"))); }
+function renderArena() {
+  const d = dailyNow(), boss = BOSSES.find(b => b.name === d.bossName) || BOSSES[0], hero = heroB();
+  $("#heroArt").innerHTML = brawlerSVG(hero); $("#heroName2").textContent = S.name;
+  $("#bossArt").innerHTML = boss.svg; $("#bossName").textContent = boss.name;
+  const total = d.items.length || 5, hits = d.items.filter(i => i.ok).length;
+  $("#bossHp").style.width = (100 - hits / total * 100) + "%";
+  renderHearts(d.hearts);
+  $("#arenaTitle").textContent = `Today's boss: ${boss.name}`;
+  $("#arenaSub").textContent = d.src ? `Built from ${dayLabel(d.src.day)}.` : "";
+  $("#arenaStart").hidden = d.status !== "ready"; $("#arenaPlay").hidden = d.status !== "play"; $("#arenaEnd").hidden = !["won", "lost"].includes(d.status);
+  if (d.status === "ready") {
+    $("#arenaIntro").textContent = !d.src
+      ? "Quest Day unlocks after you solve some homework. Solve a few questions today and a boss will be waiting for you tomorrow!"
+      : `${boss.name} has 5 weak spots. Answer questions like the ones in ${dayLabel(d.src.day)} to hit it. You have 3 hearts. Ready?`;
+    $("#arenaGo").hidden = !d.src; $("#arenaGo").disabled = !sample;
+    if (d.src && !sample) $("#arenaStatus").textContent = "Quest Day uses Study Buddy, which works when this page is opened inside Claude.";
+  }
+  if (d.status === "play") renderArenaQ();
+  if (d.status === "won" || d.status === "lost") renderArenaEnd();
+}
+$("#arenaGo").onclick = async () => {
+  const d = dailyNow(); if (!d.src) return;
+  await aiReady; if (!sample) return;
+  const pairs = d.src.ids.map(([qid, sid]) => { const q = findQ(qid); const s = q?.steps.find(x => x.id === sid); return q && s ? { q, s } : null; }).filter(Boolean);
+  if (!pairs.length) { $("#arenaStatus").textContent = "The homework for this boss was deleted. Solve something new today!"; return; }
+  const summary = pairs.map(({ q, s }) => {
+    const help = (s.chat || []).filter(t => t.role === "assistant").map(t => clean(t.content)).join(" ").replace(/\s+/g, " ").slice(0, 400);
+    return `- (${subjShort(q.subject)}) ${(s.intro ? s.intro + " " : "") + s.text}${help ? `\n  How it was solved: ${help}` : ""}`;
+  }).join("\n").slice(0, 14000);
+  const btn = $("#arenaGo"); btn.disabled = true; $("#arenaStatus").textContent = "The boss is getting ready… (this can take a minute)";
+  try {
+    const data = await sample.json(`Make a 5-question daily quiz for ${S.name}, a ${gradeDesc()} student in Greece. It checks they remember how to do the homework below, which they solved recently. Write NEW questions that are very similar (same skill, different numbers or examples), from easy to a bit harder. Keep each question short and clear.
+Write the questions and choices in the same language as the homework (usually Greek). Write "hint" and "explain" in ${S.helpLang === "Greek" ? "Greek" : "English"}.
+Mix "mc" (exactly 4 choices, one correct, wrong choices from common mistakes) and "short" (answer is a number, word or short phrase; give the expected answer).
+"hint": one sentence that helps without giving the answer. "explain": one or two sentences showing how to get the answer.
+Reply with only JSON like {"questions":[{"type":"mc","q":"...","choices":["a","b","c","d"],"answer":1,"hint":"...","explain":"..."},{"type":"short","q":"...","answer":"12","hint":"...","explain":"..."}]}
+
+HOMEWORK:
+${summary}`, { cache: false });
+    const items = (data?.questions || []).filter(x => x && x.q && (x.type === "short" ? x.answer != null : Array.isArray(x.choices) && x.choices.length >= 2)).slice(0, 5)
+      .map(x => ({ type: x.type === "short" ? "short" : "mc", q: String(x.q), choices: x.type === "short" ? null : x.choices.map(String), answer: x.type === "short" ? String(x.answer) : Number(x.answer) || 0, hint: String(x.hint || ""), explain: String(x.explain || ""), ok: false, tries: 0, given: null }));
+    if (items.length < 3) throw { code: "invalid_json" };
+    Object.assign(d, { items, idx: 0, hearts: 3, status: "play" }); save();
+    $("#arenaStatus").textContent = ""; beep(SFX.up); renderArena();
+  } catch (e) { $("#arenaStatus").textContent = aiErr(e); }
+  finally { btn.disabled = false; }
+};
+let arenaPick = null;
+function renderArenaQ() {
+  const d = S.daily, it = d.items[d.idx];
+  $("#arenaProg").textContent = `Weak spot ${d.idx + 1} of ${d.items.length}`;
+  $("#arenaQ").textContent = it.q;
+  $("#arenaHint").hidden = !it.tries; if (it.tries) $("#arenaHint").textContent = "Hint: " + it.hint;
+  arenaPick = null;
+  if (it.type === "mc") {
+    $("#arenaAns").replaceChildren(...it.choices.map((c, ci) => el("button", { class: "choice", onclick: e => { arenaPick = ci; document.querySelectorAll("#arenaAns .choice").forEach(b => b.classList.remove("picked")); e.currentTarget.classList.add("picked"); } }, `${"ΑΒΓΔ"[ci] || ci + 1}) ${c}`)));
+  } else {
+    const inp = el("input", { class: "field", id: "arenaInput", maxlength: 120, placeholder: "Your answer", autocomplete: "off" });
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") $("#arenaSubmit").click(); });
+    $("#arenaAns").replaceChildren(inp);
+  }
+}
+$("#arenaSubmit").onclick = async () => {
+  const d = S.daily; if (!d || d.status !== "play") return;
+  const it = d.items[d.idx], btn = $("#arenaSubmit");
+  let given = it.type === "mc" ? arenaPick : $("#arenaInput")?.value.trim();
+  if (given == null || given === "") { toast(it.type === "mc" ? "Pick an answer first!" : "Type your answer first!"); return; }
+  let ok = it.type === "mc" ? given === it.answer : norm(given) === norm(it.answer);
+  if (!ok && it.type === "short" && sample) {
+    btn.disabled = true; btn.textContent = "Checking…";
+    try { const r = await sample.json(`Is the student's answer correct? Accept answers that mean the same (equivalent fractions/decimals like 0,75 = 3/4, small spelling mistakes, Greek or English, units optional if the number is right).\nQuestion: ${it.q}\nExpected: ${it.answer}\nStudent: ${given}\nReply with only JSON like {"ok":true}`, { modelTier: "quick" }); ok = !!r?.ok; } catch {}
+    btn.disabled = false; btn.textContent = "Attack!";
+  }
+  it.given = given;
+  if (ok) {
+    it.ok = true; beep(SFX.coin);
+    $("#bossSide").classList.remove("hit"); void $("#bossSide").offsetWidth; $("#bossSide").classList.add("hit");
+    addCups(5, $("#bossSide"));
+    if (d.idx < d.items.length - 1) { d.idx++; save(); setTimeout(renderArena, 450); }
+    else { d.status = "won"; d.drop = { taps: 0, rarity: 0, opened: false }; save(); gainXP(40, $("#bossSide")); addCups(25); confetti(220); beep(SFX.clear); setTimeout(renderArena, 600); }
+  } else {
+    it.tries++; d.hearts--; beep(SFX.tick);
+    $("#heroSide").classList.remove("hurt"); void $("#heroSide").offsetWidth; $("#heroSide").classList.add("hurt");
+    if (d.hearts <= 0) { d.status = "lost"; save(); setTimeout(renderArena, 600); }
+    else { save(); renderArena(); toast(`Not quite! ${d.hearts} heart${d.hearts > 1 ? "s" : ""} left. Read the hint and try again.`); }
+  }
+};
+
+/* mystery drop */
+const RARITY = [
+  { name: "Rare", c1: "#3fa7ff", c2: "#1b5fa8", cups: 10 },
+  { name: "Super Rare", c1: "#2ee6a6", c2: "#118a60", cups: 20 },
+  { name: "Epic", c1: "#c04cff", c2: "#6a1b9a", cups: 35 },
+  { name: "Mythic", c1: "#ff4d6d", c2: "#a4133c", cups: 50, brawler: true },
+  { name: "Legendary", c1: "#ffd23f", c2: "#e85d04", cups: 80, brawler: true },
+];
+function renderArenaEnd() {
+  const d = S.daily, won = d.status === "won";
+  $("#arenaEndTitle").textContent = won ? "VICTORY!" : "Defeated…";
+  $("#arenaEndTitle").style.color = won ? "var(--gold)" : "var(--rose)";
+  $("#arenaEndMsg").textContent = won
+    ? (d.drop?.opened ? "You beat today's boss! Come back tomorrow for a new one." : "You beat the boss! Tap the Mystery Drop 3 times to open it.")
+    : "The boss won this time. Look at the answers below, and come back tomorrow for a new battle!";
+  $("#dropBox").hidden = !won;
+  if (won) {
+    const r = RARITY[d.drop.rarity]; const btn = $("#dropBtn");
+    btn.style.setProperty("--c1", r.c1); btn.style.setProperty("--c2", r.c2);
+    btn.hidden = d.drop.opened; $("#dropLabel").textContent = d.drop.taps ? `${r.name}!` : "TAP!";
+    $("#dropReward").hidden = !d.drop.opened;
+    if (d.drop.opened) {
+      const nb = d.drop.brawlerId && BRAWLERS.find(b => b.id === d.drop.brawlerId);
+      $("#dropReward").replaceChildren(
+        el("div", { class: "rarity", style: `color:${r.c1}` }, r.name + " drop"),
+        el("div", {}, `+${r.cups} 🏆`),
+        nb ? el("div", {}, `New brawler: ${nb.name}!`) : null,
+        S.prize ? el("div", { class: "notice", style: "text-align:left" }, el("b", {}, "Your prize: "), S.prize, el("br"), "Show this screen to claim it!") : null);
+    }
+  }
+  $("#arenaReview").replaceChildren(...(won ? [] : d.items.map((it, n) => el("div", { class: "res" + (it.ok ? " ok" : "") },
+    el("b", { class: "q" }, `${n + 1}. ${it.q}`),
+    el("span", { style: "color:var(--mint)" }, `Answer: ${it.type === "mc" ? it.choices[it.answer] : it.answer}`),
+    it.explain ? el("span", { class: "muted" }, it.explain) : null))));
+}
+$("#dropBtn").onclick = () => {
+  const d = S.daily; if (!d?.drop || d.drop.opened) return;
+  d.drop.taps++;
+  const roll = Math.random();
+  if (d.drop.rarity < RARITY.length - 1 && roll < [0.45, 0.3, 0.18, 0.1][d.drop.rarity]) d.drop.rarity++;
+  const btn = $("#dropBtn"); btn.classList.remove("wiggle"); void btn.offsetWidth; btn.classList.add("wiggle"); beep(SFX.tick);
+  if (d.drop.taps >= 3) {
+    d.drop.opened = true; const r = RARITY[d.drop.rarity];
+    if (r.brawler) { const nb = BRAWLERS.find(b => !S.unlocked.includes(b.id)); if (nb) { S.unlocked.push(nb.id); d.drop.brawlerId = nb.id; } }
+    S.prizes.push({ date: Date.now(), prize: S.prize || "", rarity: r.name });
+    addCups(r.cups, btn); confetti(200); beep(SFX.up);
+  }
+  save(); renderArenaEnd();
+};
+$("#rematchBtn").onclick = () => {
+  const d = S.daily;
+  if (!d || d.date !== today() || d.status !== "lost") { toast("There's no lost battle today to replay."); return; }
+  d.status = "play"; d.hearts = 3; d.idx = Math.max(0, d.items.findIndex(i => !i.ok)); save(); toast("Rematch ready on Quest Day!"); renderArena();
+};
 
 /* ---------- boot ---------- */
 function renderAll() { renderHUD(); renderShelf(); renderRevision(); renderQuests(); renderBuddy(); renderFocus(); renderTrophies(); }
