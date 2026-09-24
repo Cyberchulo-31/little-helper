@@ -158,6 +158,7 @@ label.lbl{display:flex;flex-direction:column;gap:4px;flex:1 1 160px}
 .chat{display:flex;flex-direction:column;gap:10px}
 .qcard{background:var(--panel-2);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
 .choice{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.choice.picked{border-color:var(--gold);background:#3a2d10}
 .choice.right{border-color:var(--mint);background:#16382b}
 .choice.wrong{border-color:var(--rose);background:#3a1628}
 .notice{border-left:4px solid var(--gold);background:#2a2110;padding:10px 14px;border-radius:8px}
@@ -225,6 +226,24 @@ details>summary{cursor:pointer;list-style-position:inside}
 .paste-zone:focus-within .paste-target,.paste-zone:focus .paste-target{border-color:var(--gold);background:#2a2110}
 kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:1px 6px;color:var(--text)}
 .guide-img{max-width:100%;max-height:260px;object-fit:contain;align-self:flex-start;background:#fff;border-radius:8px;border:3px solid var(--gold)}
+/* Revision */
+.pick{display:flex;gap:10px;align-items:flex-start;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.pick input{width:22px;height:22px;accent-color:var(--gold);flex:none;margin-top:2px}
+.pick .t{flex:1;min-width:0}
+.pick small{display:block;color:var(--muted)}
+.work{text-align:left;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.work b{font-weight:700}
+.work small{color:var(--muted)}
+.score-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:10px}
+.score-hero b{font:64px/1 var(--display);color:var(--gold);font-variant-numeric:tabular-nums}
+.res{background:var(--panel-2);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;border-left:4px solid var(--rose)}
+.res.ok{border-left-color:var(--mint)}
+.res .q{white-space:pre-line}
+.rq{background:var(--panel-2);border-radius:12px;padding:10px 14px}
+.rq summary{cursor:pointer;white-space:pre-line}
+.rq .chat{margin-top:10px}
+.past{display:flex;justify-content:space-between;gap:8px;background:var(--panel-2);border-radius:10px;padding:8px 12px}
+.past b{font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -256,6 +275,7 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
   <nav class="tabs" role="tablist">
     <button role="tab" id="tab-books" aria-selected="true" data-tab="books">My Books</button>
     <button role="tab" id="tab-buddy" aria-selected="false" data-tab="buddy">Study Buddy</button>
+    <button role="tab" id="tab-revision" aria-selected="false" data-tab="revision">Revision</button>
     <button role="tab" id="tab-quests" aria-selected="false" data-tab="quests">Quests</button>
     <button role="tab" id="tab-focus" aria-selected="false" data-tab="focus">Focus</button>
     <button role="tab" id="tab-trophies" aria-selected="false" data-tab="trophies">Trophies</button>
@@ -527,6 +547,96 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
     </aside>
   </section>
 
+  <!-- REVISION -->
+  <section id="view-revision" class="grid2" hidden>
+    <div class="stack">
+      <div class="notice" id="revNotice" hidden>Practice tests and revision notes use Study Buddy, which works when this page is opened inside Claude. You can still read all your saved work.</div>
+
+      <!-- builder -->
+      <div class="panel stack" id="testBuilder">
+        <div class="section-title" style="margin:0"><h2>Practice test</h2><span class="px muted" id="testCountdown"></span></div>
+        <p style="margin:0">Tick the assignments that are in the upcoming test. Buddy makes new questions on the same skills.</p>
+        <div class="row">
+          <label class="lbl"><span class="px muted">Subject</span><select class="field" id="revSubject"></select></label>
+          <label class="lbl"><span class="px muted">Test date (optional)</span><input class="field" type="date" id="revDate"></label>
+        </div>
+        <div class="row" style="justify-content:space-between">
+          <span class="px muted">Assignments you've done</span>
+          <button class="btn ghost" type="button" id="revAll" style="padding:6px 12px">Select all</button>
+        </div>
+        <div class="stack" id="revPick"></div>
+        <div class="row">
+          <label class="lbl"><span class="px muted">Questions</span>
+            <select class="field" id="revCount"><option>5</option><option selected>10</option><option>15</option></select></label>
+          <label class="lbl"><span class="px muted">Test written in</span>
+            <select class="field" id="revLang"><option value="Greek">Ελληνικά (like at school)</option><option value="English">English</option></select></label>
+        </div>
+        <div class="row">
+          <button class="btn gold" id="makeTest">Make my practice test</button>
+          <span class="muted" id="makeStatus" role="status"></span>
+        </div>
+      </div>
+
+      <!-- runner -->
+      <div class="panel stack" id="testRunner" hidden>
+        <div class="section-title" style="margin:0"><h2 id="testTitle">Practice test</h2><span class="px muted" id="testProg"></span></div>
+        <div class="bar"><i id="testBar"></i></div>
+        <div class="qbox" id="testQ"></div>
+        <div class="stack" id="testAnswer"></div>
+        <div class="row">
+          <button class="btn ghost" id="testBack">← Back</button>
+          <button class="btn" id="testNext">Next →</button>
+          <button class="btn ghost" id="testQuit" style="margin-left:auto">Save &amp; stop</button>
+        </div>
+      </div>
+
+      <!-- results -->
+      <div class="panel stack" id="testResults" hidden>
+        <div class="score-hero"><b id="scoreBig"></b><span id="scoreMsg"></span></div>
+        <div class="stack" id="weakBox"></div>
+        <div class="row">
+          <button class="btn gold" id="retryWrong">Practise my mistakes</button>
+          <button class="btn ghost" id="resultsDone">Back to revision</button>
+        </div>
+        <div class="stack" id="resultList"></div>
+      </div>
+
+      <!-- review one assignment -->
+      <div class="panel stack" id="reviewPanel" hidden>
+        <div class="section-title" style="margin:0"><h2 id="reviewTitle"></h2><button class="btn ghost" id="reviewClose">Close</button></div>
+        <div class="row" id="reviewMeta"></div>
+        <div class="row">
+          <button class="btn gold" id="makeNotes">Make revision notes</button>
+          <button class="btn ghost" id="reviewTest">Practice test on this</button>
+        </div>
+        <div class="answer" id="revNotes" hidden></div>
+        <div class="stack" id="reviewList"></div>
+      </div>
+    </div>
+
+    <aside class="stack">
+      <div class="panel stack">
+        <h3 style="font-size:20px">My finished work</h3>
+        <p class="muted" style="margin:0;font-size:15px">Every assignment you work on is saved here. Tap one to read how you solved it.</p>
+        <div class="stack" id="workList"></div>
+      </div>
+      <div class="panel stack">
+        <h3 style="font-size:20px">Past tests</h3>
+        <div class="stack" id="pastTests"></div>
+      </div>
+      <div class="panel stack">
+        <h3 style="font-size:20px">Keep your work safe</h3>
+        <p class="muted" style="margin:0;font-size:15px">Your work is saved in this browser. Save a backup file now and then, or to move to another computer. (Books aren't in the backup; add those again.)</p>
+        <div class="row">
+          <button class="btn ghost" id="backupBtn">Save a backup</button>
+          <label class="btn ghost" for="restoreFile" tabindex="0">Restore backup</label>
+          <input type="file" id="restoreFile" accept="application/json,.json" class="sr">
+        </div>
+        <span class="row" id="restoreConfirm" hidden><span>Replace everything on this device with the backup?</span><button class="btn" id="restoreYes">Yes, restore</button><button class="btn ghost" id="restoreNo">Cancel</button></span>
+      </div>
+    </aside>
+  </section>
+
   <!-- TROPHIES -->
   <section id="view-trophies" hidden class="stack">
     <div class="section-title"><h2>Trophy room</h2><span class="muted" id="trophyCount"></span></div>
@@ -571,7 +681,7 @@ const GRADES = ["A", "B", "C"];
 const GRADE_NAME = { A: "Α΄ Γυμνασίου", B: "Β΄ Γυμνασίου", C: "Γ΄ Γυμνασίου" };
 const SAMPLE_BOOK = () => ({ id: "sample", title: "Try it: sample page", subject: "Mathematics (Μαθηματικά)", type: "sample", pages: 1, lastPage: 1, hl: [] });
 const fresh = () => ({ name: "Player 1", xp: 0, streak: 0, lastDay: null, quests: exampleQuests(), active: null,
-  focusRuns: 0, stepsDone: 0, questsDone: 0, quizRight: 0, badges: [], parked: [], sound: true, grade: "A", guide: null, books: [SAMPLE_BOOK()], helpLang: "English" });
+  focusRuns: 0, stepsDone: 0, questsDone: 0, quizRight: 0, badges: [], parked: [], sound: true, grade: "A", guide: null, books: [SAMPLE_BOOK()], helpLang: "English", tests: [], currentTest: null, testDate: "", revSubject: "" });
 
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch { S = fresh(); }
@@ -699,6 +809,8 @@ const BADGES = [
   ["streak3", "On Fire", "3-day streak", () => S.streak >= 3],
   ["streak7", "Unstoppable", "7-day streak", () => S.streak >= 7],
   ["lvl5", "Rising Star", "Reach level 5", () => levelInfo(S.xp).lvl >= 5],
+  ["test1", "Test Ready", "Finish a practice test", () => S.tests.length >= 1],
+  ["top", "Top Marks", "Score 90% or more on a practice test", () => S.tests.some(t => t.total && t.correct / t.total >= 0.9)],
 ];
 function checkBadges() {
   for (const [id, name, , test] of BADGES) if (!S.badges.includes(id) && test()) { S.badges.push(id); setTimeout(() => toast(`Trophy unlocked: ${name}!`), 600); }
@@ -707,7 +819,8 @@ function checkBadges() {
 /* ---------- tabs ---------- */
 function showTab(name) {
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === name));
-  for (const v of ["books", "quests", "focus", "buddy", "trophies"]) $("#view-" + v).hidden = v !== name;
+  for (const v of ["books", "revision", "quests", "focus", "buddy", "trophies"]) $("#view-" + v).hidden = v !== name;
+  if (name === "revision") renderRevision();
   if (name === "books" && R.book) drawHighlights();
   if (name === "focus") renderFocus(); if (name === "buddy") renderBuddy(); if (name === "trophies") renderTrophies();
   try { sessionStorage.setItem(KEY + "-tab", name); } catch {}
@@ -725,16 +838,18 @@ function dueChip(due) {
 }
 const findQ = id => S.quests.find(q => q.id === id);
 function toggleStep(q, s, btn) {
-  s.done = !s.done;
+  s.done = !s.done; q.touched = Date.now();
   if (s.done) {
+    s.doneAt = Date.now();
     S.stepsDone++; gainXP(10, btn);
     if (q.steps.length && q.steps.every(x => x.done) && !q.cleared) {
-      q.cleared = true; S.questsDone++; confetti(160); beep(SFX.clear);
+      q.cleared = true; q.clearedAt = Date.now(); S.questsDone++; confetti(160); beep(SFX.clear);
       setTimeout(() => gainXP(50, btn), 500); toast(`Quest cleared: ${q.title}!`);
     }
   } else { S.stepsDone = Math.max(0, S.stepsDone - 1); }
   save(); renderQuests();
 }
+let delQuestArm = null;
 function renderQuests() {
   const list = $("#questList"); list.replaceChildren();
   if (!S.quests.length) { list.append(el("div", { class: "empty" }, "No quests yet. Paste your homework in the box above.")); return; }
@@ -746,7 +861,9 @@ function renderQuests() {
       el("div", { class: "qhead" },
         el("div", {}, el("h3", {}, q.title),
           el("div", { class: "qmeta" }, el("span", { class: "chip" }, q.subject), dueChip(q.due), q.cleared ? el("span", { class: "chip", style: "color:var(--mint)" }, "Cleared") : null, q.example ? el("span", { class: "chip ex" }, "Example") : null)),
-        el("button", { class: "x", title: "Delete quest", "aria-label": "Delete quest " + q.title, onclick: () => { S.quests = S.quests.filter(x => x !== q); if (S.active === q.id) S.active = null; save(); renderQuests(); } }, "✕")),
+        el("button", { class: "x", title: "Delete quest", "aria-label": "Delete quest " + q.title, onclick: e => {
+          if (delQuestArm !== q.id) { delQuestArm = q.id; e.currentTarget.textContent = "Delete for good?"; return; }
+          S.quests = S.quests.filter(x => x !== q); if (S.active === q.id) S.active = null; delQuestArm = null; save(); renderQuests(); } }, "✕")),
       el("div", { class: "row", style: "gap:10px" }, el("div", { class: "bar", style: "flex:1" }, el("i", { style: `width:${pct}%` })), el("span", { class: "px muted" }, `${done}/${q.steps.length}`)),
       el("ul", { class: "steps" }, q.steps.map(s => el("li", { class: "step" + (s.done ? " done" : "") },
         el("button", { class: "check", "aria-label": (s.done ? "Undo: " : "Finish: ") + s.text, onclick: e => toggleStep(q, s, e.currentTarget) }, s.done ? "✓" : ""),
@@ -994,7 +1111,7 @@ async function guideSend(content, show, restore) {
   const [q, s] = guideTarget();
   if (!s) return;
   if (!sample) { $("#aiNotice").hidden = false; return; }
-  s.chat.push({ role: "user", content, show }); save();
+  s.chat.push({ role: "user", content, show }); q.touched = Date.now(); save();
   renderGuide();
   guiding = true; renderGuide();
   const bubble = el("div", { class: "answer" }, el("p", { class: "muted" }, "Buddy is thinking…"));
@@ -1433,8 +1550,234 @@ Reply with only JSON like {"instructions":"Να απλοποιήσετε τα κ
   openGuide(q.id, steps[0].id);
 };
 
+/* ---------- Revision ---------- */
+const worked = q => !q.example && q.steps.some(s => s.done || (s.chat?.length || 0) > 1);
+const doneWork = () => S.quests.filter(worked).sort((a, b) => (b.touched || b.clearedAt || 0) - (a.touched || a.clearedAt || 0));
+const fmtDate = t => t ? new Date(t).toLocaleDateString(undefined, { day: "numeric", month: "short" }) : "";
+const subjShort = s => String(s || "Other").split(" (")[0];
+let revSel = new Set(), reviewId = null, revView = "builder";
+function daysTo(d) { return d ? Math.round((new Date(d + "T00:00") - new Date(today() + "T00:00")) / 864e5) : null; }
+function showRev(v) {
+  revView = v;
+  $("#testBuilder").hidden = v !== "builder"; $("#testRunner").hidden = v !== "runner";
+  $("#testResults").hidden = v !== "results"; $("#reviewPanel").hidden = v !== "review";
+}
+function renderRevision() {
+  $("#revNotice").hidden = !!sample;
+  const work = doneWork();
+  // subject filter
+  const subs = [...new Set(work.map(q => q.subject))];
+  const sel = $("#revSubject");
+  sel.replaceChildren(el("option", { value: "" }, "All subjects"), ...subs.map(x => el("option", { value: x }, subjShort(x))));
+  sel.value = subs.includes(S.revSubject) ? S.revSubject : "";
+  $("#revDate").value = S.testDate || "";
+  const d = daysTo(S.testDate);
+  $("#testCountdown").textContent = d == null ? "" : d > 1 ? `Test in ${d} days` : d === 1 ? "Test tomorrow!" : d === 0 ? "Test today. You've got this!" : "";
+  const shown = work.filter(q => !sel.value || q.subject === sel.value);
+  $("#revPick").replaceChildren(...(shown.length ? shown.map(q => {
+    const n = q.steps.filter(s => s.done).length;
+    const cb = el("input", { type: "checkbox", id: "pick-" + q.id });
+    cb.checked = revSel.has(q.id);
+    cb.onchange = () => { cb.checked ? revSel.add(q.id) : revSel.delete(q.id); };
+    return el("label", { class: "pick", for: "pick-" + q.id }, cb, el("span", { class: "t" }, el("b", {}, q.title),
+      el("small", {}, `${subjShort(q.subject)} · ${n} of ${q.steps.length} solved · ${fmtDate(q.touched || q.clearedAt)}`)));
+  }) : [el("div", { class: "empty" }, "Finished assignments show up here. Solve a few questions first!")]));
+  $("#makeTest").disabled = !sample || !shown.length;
+  // work list
+  $("#workList").replaceChildren(...(work.length ? work.map(q => el("button", { class: "work", onclick: () => openReview(q.id) },
+    el("b", {}, q.title), el("small", {}, `${subjShort(q.subject)} · ${fmtDate(q.touched || q.clearedAt)} · ${q.cleared ? "✓ finished" : `${q.steps.filter(s => s.done).length}/${q.steps.length} solved`}`))) : [el("p", { class: "muted", style: "margin:0" }, "Nothing yet.")]));
+  // past tests
+  $("#pastTests").replaceChildren(...(S.tests.length ? [...S.tests].reverse().slice(0, 12).map(t => el("div", { class: "past" },
+    el("span", {}, el("span", {}, t.title), el("br"), el("small", { class: "muted" }, fmtDate(t.date))), el("b", { style: `color:${t.correct / t.total >= 0.7 ? "var(--mint)" : "var(--gold)"}` }, `${t.correct}/${t.total}`))) : [el("p", { class: "muted", style: "margin:0" }, "No tests yet.")]));
+  if (S.currentTest && revView === "builder") { renderRunner(); showRev("runner"); }
+  else if (revView === "review") renderReview();
+}
+$("#revSubject").onchange = e => { S.revSubject = e.target.value; save(); renderRevision(); };
+$("#revDate").onchange = e => { S.testDate = e.target.value; save(); renderRevision(); };
+$("#revAll").onclick = () => { const boxes = [...document.querySelectorAll("#revPick input")]; const all = boxes.every(b => b.checked); boxes.forEach(b => { b.checked = !all; b.onchange(); }); };
+
+/* what he did, for the prompt */
+function workSummary(qs, budget = 18000) {
+  let out = "";
+  for (const q of qs) {
+    out += `\n## ${q.title} (${subjShort(q.subject)})\n`;
+    for (const s of q.steps) {
+      const help = (s.chat || []).filter(t => t.role === "assistant").map(t => clean(t.content)).join(" ").replace(/\s+/g, " ").slice(0, 500);
+      out += `- Question: ${(s.intro ? s.intro + " " : "") + s.text}${s.done ? " (solved)" : ""}${help ? `\n  How it was solved: ${help}` : ""}\n`;
+      if (out.length > budget) return out.slice(0, budget);
+    }
+  }
+  return out;
+}
+
+/* make a test */
+async function makeTest(qs, focus) {
+  await aiReady; if (!sample) { $("#revNotice").hidden = false; return; }
+  const n = Number($("#revCount").value) || 10, lang = $("#revLang").value;
+  const btn = $("#makeTest"), st = $("#makeStatus");
+  btn.disabled = true; st.textContent = "Buddy is writing your test… (this can take a minute)";
+  try {
+    const data = await sample.json(`Create a practice test of ${n} questions for ${S.name}, a ${gradeDesc()} student in Greece preparing for a school test.
+Base it ONLY on the skills and topics in the homework below, which they already did. Write NEW questions (different numbers, words or examples) that test the same skills, like a real Greek school test: start easy, get harder, spread across all the assignments, and add one or two that combine skills.${focus ? `\nFocus especially on these weak spots: ${focus}` : ""}
+Write the questions and choices in ${lang === "Greek" ? "Greek" : "English"}. Write "topic" and "explain" in ${S.helpLang === "Greek" ? "Greek" : "English"}.
+Mix two types: about half "mc" (exactly 4 choices, one correct, plausible wrong choices based on common mistakes) and half "short" (answered with a number, word or short phrase; give the expected answer).
+"explain": one or two sentences showing how to get the right answer.
+Reply with only JSON like {"title":"Κλάσματα: τεστ εξάσκησης","questions":[{"type":"mc","q":"...","choices":["a","b","c","d"],"answer":2,"topic":"adding fractions","explain":"..."},{"type":"short","q":"...","answer":"3/4","topic":"...","explain":"..."}]}
+
+HOMEWORK THEY DID:
+${workSummary(qs)}`, { cache: false });
+    const items = (data?.questions || []).filter(x => x && x.q && (x.type === "short" ? x.answer != null : Array.isArray(x.choices) && x.choices.length >= 2))
+      .slice(0, 20).map(x => ({ type: x.type === "short" ? "short" : "mc", q: String(x.q), choices: x.type === "short" ? null : x.choices.map(String), answer: x.type === "short" ? String(x.answer) : Number(x.answer) || 0, topic: String(x.topic || ""), explain: String(x.explain || ""), given: null }));
+    if (!items.length) throw { code: "invalid_json" };
+    S.currentTest = { id: uid(), title: String(data.title || "Practice test").slice(0, 60), from: qs.map(q => q.id), subjects: [...new Set(qs.map(q => subjShort(q.subject)))], items, i: 0, started: Date.now() };
+    save(); st.textContent = ""; renderRunner(); showRev("runner"); beep(SFX.coin);
+  } catch (e) { st.textContent = aiErr(e); }
+  finally { btn.disabled = false; }
+}
+$("#makeTest").onclick = () => {
+  const qs = doneWork().filter(q => revSel.has(q.id));
+  if (!qs.length) { $("#makeStatus").textContent = "Tick at least one assignment first."; return; }
+  makeTest(qs);
+};
+
+/* run a test: one question per screen */
+function renderRunner() {
+  const t = S.currentTest; if (!t) return;
+  const it = t.items[t.i], n = t.items.length;
+  $("#testTitle").textContent = t.title;
+  $("#testProg").textContent = `Question ${t.i + 1} of ${n}`;
+  $("#testBar").style.width = ((t.i) / n * 100) + "%";
+  $("#testQ").textContent = it.q;
+  const box = $("#testAnswer");
+  if (it.type === "mc") {
+    box.replaceChildren(...it.choices.map((c, ci) => el("button", { class: "choice" + (it.given === ci ? " picked" : ""), "aria-pressed": it.given === ci, onclick: () => { it.given = ci; save(); renderRunner(); beep(SFX.tick); } }, `${"ΑΒΓΔΕ"[ci] || ci + 1}) ${c}`)));
+  } else {
+    const ta = el("textarea", { class: "field", id: "shortAns", rows: 2, maxlength: 300, placeholder: "Your answer" });
+    ta.value = it.given ?? ""; ta.oninput = () => { it.given = ta.value; save(); };
+    box.replaceChildren(ta);
+  }
+  $("#testBack").disabled = t.i === 0;
+  $("#testNext").textContent = t.i === n - 1 ? "Finish & mark ✓" : "Next →";
+}
+$("#testBack").onclick = () => { const t = S.currentTest; if (t && t.i > 0) { t.i--; save(); renderRunner(); } };
+$("#testNext").onclick = () => {
+  const t = S.currentTest; if (!t) return;
+  if (t.i < t.items.length - 1) { t.i++; save(); renderRunner(); $("#testQ").scrollIntoView({ block: "nearest" }); }
+  else markTest();
+};
+$("#testQuit").onclick = () => { showRev("builder"); revView = "paused"; renderRevision(); revView = "builder"; toast("Test saved. Open Revision to carry on."); };
+
+const norm = x => String(x ?? "").toLowerCase().replace(/\s+/g, "").replace(/,/g, ".").replace(/[.。]$/, "").normalize("NFD").replace(/[̀-ͯ]/g, "");
+async function markTest() {
+  const t = S.currentTest; const btn = $("#testNext");
+  const unanswered = t.items.filter(it => it.given == null || it.given === "").length;
+  if (unanswered && !t.confirmBlank) { t.confirmBlank = true; toast(`${unanswered} question${unanswered > 1 ? "s are" : " is"} blank. Press Finish again to mark anyway.`); return; }
+  btn.disabled = true; btn.textContent = "Marking…";
+  for (const it of t.items) if (it.type === "mc") it.ok = it.given === it.answer;
+  const shorts = t.items.map((it, i) => ({ it, i })).filter(x => x.it.type === "short");
+  for (const { it } of shorts) it.ok = norm(it.given) !== "" && norm(it.given) === norm(it.answer);
+  const toCheck = shorts.filter(x => !x.it.ok && norm(x.it.given) !== "");
+  if (toCheck.length && sample) {
+    try {
+      const res = await sample.json(`Mark a ${gradeDesc()} student's short answers on a practice test. Accept answers that mean the same as the expected answer (equivalent fractions or decimals, 0,75 = 0.75 = 3/4, small spelling mistakes, Greek or English, with or without units if the number is right). Be fair, not picky.
+For each, give "ok" (true/false) and "fb": one short friendly sentence in ${S.helpLang === "Greek" ? "Greek" : "English"} (if wrong, what went wrong).
+Reply with only JSON like {"marks":[{"i":0,"ok":true,"fb":"..."}]}
+${JSON.stringify(toCheck.map(({ it, i }) => ({ i, question: it.q, expected: it.answer, student: it.given })))}`, { modelTier: "quick", cache: false });
+      for (const m of res?.marks || []) { const it = t.items[Number(m.i)]; if (it && it.type === "short") { it.ok = !!m.ok; it.fb = String(m.fb || ""); } }
+    } catch {}
+  }
+  const correct = t.items.filter(it => it.ok).length;
+  S.tests.push({ id: t.id, date: Date.now(), title: t.title, subjects: t.subjects, from: t.from, total: t.items.length, correct, items: t.items.map(({ q, type, choices, answer, given, ok, topic, explain, fb }) => ({ q, type, choices, answer, given, ok, topic, explain, fb })) });
+  if (S.tests.length > 40) S.tests.splice(0, S.tests.length - 40);
+  S.currentTest = null; save();
+  btn.disabled = false;
+  gainXP(20 + correct * 5, $("#testNext"));
+  if (correct / t.items.length >= 0.8) confetti(180);
+  showResults(S.tests.at(-1)); showRev("results"); renderRevision();
+}
+let lastResult = null;
+function showResults(r) {
+  lastResult = r;
+  const pct = Math.round(r.correct / r.total * 100);
+  $("#scoreBig").textContent = `${r.correct}/${r.total}`;
+  $("#scoreMsg").textContent = pct >= 90 ? "Amazing! You're ready for this test." : pct >= 70 ? "Great work! Check the few you missed." : pct >= 50 ? "Good try! Practise the mistakes below and try again." : "This is what practice is for. Let's work on the mistakes.";
+  const weak = [...new Set(r.items.filter(i => !i.ok && i.topic).map(i => i.topic))];
+  $("#weakBox").replaceChildren(...(weak.length ? [el("b", {}, "Practise these:"), el("div", { class: "row" }, weak.map(w => el("span", { class: "chip soon" }, w)))] : []));
+  $("#retryWrong").hidden = !r.items.some(i => !i.ok);
+  $("#resultList").replaceChildren(...r.items.map((it, n) => el("div", { class: "res" + (it.ok ? " ok" : "") },
+    el("b", { class: "q" }, `${n + 1}. ${it.q}`),
+    el("span", {}, `${it.ok ? "✓" : "✗"} Your answer: ${it.type === "mc" ? (it.given == null ? "(blank)" : it.choices[it.given]) : (it.given || "(blank)")}`),
+    it.ok ? null : el("span", { style: "color:var(--mint)" }, `Right answer: ${it.type === "mc" ? it.choices[it.answer] : it.answer}`),
+    it.fb ? el("span", { class: "muted" }, it.fb) : null,
+    it.explain ? el("span", { class: "muted" }, it.explain) : null)));
+}
+$("#resultsDone").onclick = () => { showRev("builder"); renderRevision(); };
+$("#retryWrong").onclick = () => {
+  const r = lastResult; if (!r) return;
+  const qs = S.quests.filter(q => (r.from || []).includes(q.id));
+  const focus = r.items.filter(i => !i.ok).map(i => `${i.topic}: "${i.q}"`).join("; ").slice(0, 2000);
+  showRev("builder"); makeTest(qs.length ? qs : doneWork().slice(0, 3), focus);
+};
+
+/* read a finished assignment */
+function openReview(id) { reviewId = id; showTab("revision"); showRev("review"); renderReview(); $("#reviewPanel").scrollIntoView({ block: "start" }); }
+function renderReview() {
+  const q = findQ(reviewId); if (!q) { showRev("builder"); return; }
+  $("#reviewTitle").textContent = q.title;
+  $("#reviewMeta").replaceChildren(el("span", { class: "chip" }, subjShort(q.subject)), el("span", { class: "chip" }, `${q.steps.filter(s => s.done).length}/${q.steps.length} solved`), q.touched ? el("span", { class: "chip" }, "Last worked " + fmtDate(q.touched)) : null);
+  $("#revNotes").hidden = !q.revNotes; if (q.revNotes) $("#revNotes").innerHTML = md(q.revNotes);
+  $("#makeNotes").textContent = q.revNotes ? "Remake revision notes" : "Make revision notes";
+  $("#makeNotes").disabled = !sample;
+  $("#reviewList").replaceChildren(...q.steps.map((s, i) => {
+    const chat = el("div", { class: "chat" }, ...(s.chat || []).map(t => t.role === "user"
+      ? el("div", { class: "bubble-me" }, t.show || t.content.replace(/^Here is my work or answer:\n/, ""))
+      : Object.assign(el("div", { class: "answer" }), { innerHTML: md(clean(t.content)) })));
+    return el("details", { class: "rq" },
+      el("summary", {}, `${s.done ? "✓ " : ""}${(s.intro ? s.intro + "\n" : "") + s.text}`),
+      (s.chat || []).length ? chat : el("p", { class: "muted" }, "No Buddy help on this one."),
+      el("div", { class: "row", style: "margin-top:8px" }, el("button", { class: "btn ghost", onclick: () => openGuide(q.id, s.id) }, "Practise it again with Buddy")));
+  }));
+}
+$("#reviewClose").onclick = () => { reviewId = null; showRev("builder"); renderRevision(); };
+$("#reviewTest").onclick = () => { const q = findQ(reviewId); if (q) { revSel = new Set([q.id]); showRev("builder"); renderRevision(); makeTest([q]); } };
+$("#makeNotes").onclick = async () => {
+  const q = findQ(reviewId); if (!q || !sample) return;
+  const b = $("#makeNotes"), box = $("#revNotes"); b.disabled = true; box.hidden = false; box.innerHTML = "<p class='muted'>Buddy is writing your notes…</p>";
+  try {
+    const { text } = await sample(`${langRule()}
+Write short revision notes for ${S.name}, a ${gradeDesc()} student, from this homework they finished. Include: the key rules or facts (bullets, **bold** key words), one short worked example for each skill, and "Watch out" for the common mistakes. Max about 220 words. Plain Markdown, no tables, no LaTeX.
+${workSummary([q], 12000)}`, { onText: ({ text }) => box.innerHTML = md(clean(text)) });
+    q.revNotes = clean(text); save();
+  } catch (e) { box.innerHTML = `<p class="muted">${esc(aiErr(e))}</p>`; }
+  finally { b.disabled = false; b.textContent = "Remake revision notes"; }
+};
+
+/* backup */
+let downloads = null;
+if (window.claude?.use) window.claude.use("downloads").then(d => { downloads = d; }).catch(() => {});
+$("#backupBtn").onclick = async () => {
+  const name = `homework-quest-backup-${today()}.json`, data = JSON.stringify({ app: "homework-quest", v: 1, saved: Date.now(), state: S });
+  if (!downloads) { toast("Saving files isn't available here."); return; }
+  try { const r = await downloads.save({ filename: name, data: new Blob([data], { type: "application/json" }) }); if (r?.status === "saved") toast("Backup saved. Keep the file somewhere safe."); }
+  catch (e) { if (e?.code === "unavailable" || e?.code === "not_granted") toast("Saving files isn't available here."); else if (e?.code !== "declined") toast("The backup couldn't be saved. Try again."); }
+};
+let pendingRestore = null;
+$("#restoreFile").addEventListener("change", async e => {
+  const f = e.target.files?.[0]; e.target.value = ""; if (!f) return;
+  try { const j = JSON.parse(await f.text()); if (j?.app !== "homework-quest" || !Array.isArray(j.state?.quests)) throw 0; pendingRestore = j.state; $("#restoreConfirm").hidden = false; }
+  catch { toast("That file isn't a Homework Quest backup."); }
+});
+$("#restoreNo").onclick = () => { pendingRestore = null; $("#restoreConfirm").hidden = true; };
+$("#restoreYes").onclick = () => {
+  if (!pendingRestore) return;
+  S = Object.assign(fresh(), pendingRestore); pendingRestore = null; $("#restoreConfirm").hidden = true;
+  for (const q of S.quests) for (const s of q.steps) s.chat = s.chat || [];
+  save(); $("#heroName").value = S.name; renderAll(); toast("Backup restored!");
+};
+document.querySelector('label[for="restoreFile"]').addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#restoreFile").click(); } });
+
 /* ---------- boot ---------- */
-function renderAll() { renderHUD(); renderShelf(); renderQuests(); renderBuddy(); renderFocus(); renderTrophies(); }
+function renderAll() { renderHUD(); renderShelf(); renderRevision(); renderQuests(); renderBuddy(); renderFocus(); renderTrophies(); }
 renderAll();
 let startTab = "books"; try { startTab = sessionStorage.getItem(KEY + "-tab") || "books"; } catch {}
 showTab(startTab);
