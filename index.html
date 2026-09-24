@@ -1,0 +1,1444 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Homework Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Lilita+One&family=Silkscreen&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --void:#140c22; --panel:#1f1535; --panel-2:#2a1d48; --line:#3d2b66;
+  --violet:#9d6bff; --violet-hi:#b995ff; --lilac:#dccbff;
+  --text:#f3edff; --muted:#a998cc;
+  --gold:#ffcf5a; --mint:#5fe3a8; --rose:#ff7aa8;
+  --display:"Lilita One","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --pixel:"Silkscreen","Courier New",monospace;
+  --r:14px;
+}
+*{box-sizing:border-box}
+html,body{background:var(--void)}
+body{
+  color:var(--text); font:17px/1.55 var(--body);
+  padding-inline:16px; padding-block:0 48px;
+  background:
+    radial-gradient(900px 500px at 85% -10%, #3a1f6e 0%, transparent 60%),
+    radial-gradient(700px 400px at -10% 110%, #2b1552 0%, transparent 60%),
+    var(--void);
+  background-attachment:fixed;
+  min-height:100%;
+}
+.wrap{max-width:1080px;margin:0 auto}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:8px}
+h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.01em;text-wrap:balance;margin:0}
+.px{font-family:var(--pixel);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.muted{color:var(--muted)}
+[hidden]{display:none!important}
+
+/* HUD */
+.hud{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:20;
+  margin-inline:-16px; padding:12px 16px;
+  background:color-mix(in oklab, var(--void) 88%, transparent);
+  backdrop-filter:blur(8px); border-bottom:1px solid var(--line);
+}
+.hud-in{max-width:1080px;margin:0 auto;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.avatar{
+  width:52px;height:52px;flex:none;display:grid;place-items:center;
+  font:28px var(--display);color:var(--void);
+  background:linear-gradient(160deg,var(--lilac),var(--violet));
+  clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%);
+}
+.who{display:flex;flex-direction:column;min-width:0}
+.who input{
+  background:transparent;border:0;border-bottom:1px dashed transparent;
+  font:22px var(--display);width:12ch;padding:0;
+}
+.who input:hover,.who input:focus{border-bottom-color:var(--line);outline:none}
+.rank{color:var(--violet-hi)}
+.xpbox{flex:1 1 220px;min-width:180px}
+.xprow{display:flex;justify-content:space-between;font-variant-numeric:tabular-nums}
+.bar{height:14px;border-radius:99px;background:var(--panel-2);overflow:hidden;border:1px solid var(--line)}
+.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--violet),var(--gold));transition:width .6s cubic-bezier(.2,.9,.3,1.2)}
+.stats{display:flex;gap:8px}
+.stat{
+  display:flex;flex-direction:column;align-items:center;min-width:64px;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px 10px;
+}
+.stat b{font:22px var(--display);font-variant-numeric:tabular-nums}
+.stat.lvl b{color:var(--gold)}
+.stat.fire b{color:var(--rose)}
+.icon-btn{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+
+/* Tabs */
+nav.tabs{display:flex;gap:6px;margin:18px 0 14px;overflow-x:auto;padding-bottom:4px}
+nav.tabs button{
+  flex:none;border:1px solid var(--line);background:var(--panel);border-radius:99px;
+  padding:10px 18px;font-family:var(--display);font-size:18px;color:var(--muted);
+}
+nav.tabs button[aria-selected="true"]{background:var(--violet);border-color:var(--violet);color:#fff;box-shadow:0 4px 0 #5a33b3}
+
+/* Generic */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{
+  border:0;border-radius:12px;padding:12px 18px;font-weight:700;
+  background:var(--violet);color:#fff;box-shadow:0 4px 0 #5a33b3;
+  transition:transform .08s, box-shadow .08s;
+}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #5a33b3}
+.btn.gold{background:var(--gold);color:#2a1a00;box-shadow:0 4px 0 #b88a1c}
+.btn.mint{background:var(--mint);color:#062a1a;box-shadow:0 4px 0 #2a9a68}
+.btn.ghost{background:transparent;color:var(--lilac);box-shadow:none;border:1px solid var(--line)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.field{
+  background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;min-width:0;
+}
+.field:focus{outline:2px solid var(--violet);outline-offset:0}
+textarea.field{resize:vertical;min-height:90px;width:100%}
+label.lbl{display:flex;flex-direction:column;gap:4px;flex:1 1 160px}
+.stack>label.lbl{flex:none}
+.chip{display:inline-block;font:12px var(--pixel);letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--panel-2);color:var(--lilac);border:1px solid var(--line)}
+.chip.late{background:#4a1630;color:#ffb3cd;border-color:#7a2350}
+.chip.soon{background:#3f3210;color:var(--gold);border-color:#6b5418}
+.chip.ex{background:transparent;color:var(--muted)}
+.section-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.section-title h2{font-size:26px}
+
+/* Quest cards */
+.quest{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px}
+.quest.active{border-color:var(--violet);box-shadow:0 0 0 3px color-mix(in oklab,var(--violet) 35%,transparent)}
+.quest.cleared{opacity:.72}
+.quest h3{font-size:22px}
+.qhead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.qmeta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.step{display:flex;gap:10px;align-items:center;background:var(--panel-2);border-radius:10px;padding:8px 10px}
+.step.done .stxt{text-decoration:line-through;color:var(--muted)}
+.check{
+  width:30px;height:30px;flex:none;border-radius:8px;border:2px solid var(--violet);background:transparent;
+  display:grid;place-items:center;color:var(--void);font-weight:700;
+}
+.step.done .check{background:var(--mint);border-color:var(--mint)}
+.stxt{flex:1;min-width:0;overflow-wrap:anywhere}
+.mins{font:12px var(--pixel);color:var(--muted);white-space:nowrap}
+.x{background:none;border:0;color:var(--muted);padding:4px 6px;border-radius:6px}
+.x:hover{color:var(--rose)}
+.addstep{display:flex;gap:6px}
+.addstep input{flex:1}
+.empty{border:2px dashed var(--line);border-radius:var(--r);padding:24px;text-align:center;color:var(--muted)}
+
+/* Focus */
+.focus-step{font:clamp(22px,4vw,32px)/1.25 var(--display);white-space:pre-line;text-wrap:balance;margin:6px 0 4px}
+.timer-wrap{display:grid;place-items:center;position:relative;margin:8px auto;width:min(260px,70vw);aspect-ratio:1;max-width:100%}
+.timer-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+.timer-num{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.timer-num b{font:clamp(44px,12vw,64px) var(--display);font-variant-numeric:tabular-nums;display:block;line-height:1}
+.presets button{border:1px solid var(--line);background:var(--panel-2);border-radius:10px;padding:8px 14px}
+.presets button[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)}
+.center{text-align:center}
+.parked{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.parked li{display:flex;gap:8px;align-items:center;background:var(--panel-2);border-radius:10px;padding:8px 10px}
+.parked li span{flex:1;overflow-wrap:anywhere}
+.break-card{background:linear-gradient(160deg,#1f3b34,#1f1535);border:1px solid #2f6b58}
+
+/* Buddy */
+.answer{background:var(--panel-2);border-radius:12px;padding:14px 16px;min-height:60px;max-width:70ch;overflow-wrap:anywhere}
+.answer p{margin:.3em 0}.answer ul,.answer ol{margin:.3em 0;padding-left:1.3em}
+.answer h4{font:18px var(--display);margin:.4em 0 .2em}
+.bubble-me{align-self:flex-end;background:var(--violet);color:#fff;border-radius:12px 12px 2px 12px;padding:8px 12px;max-width:85%}
+.chat{display:flex;flex-direction:column;gap:10px}
+.qcard{background:var(--panel-2);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.choice{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.choice.right{border-color:var(--mint);background:#16382b}
+.choice.wrong{border-color:var(--rose);background:#3a1628}
+.notice{border-left:4px solid var(--gold);background:#2a2110;padding:10px 14px;border-radius:8px}
+
+/* Trophies */
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.badge{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center}
+.badge .gem{width:56px;height:56px;clip-path:polygon(50% 0,100% 38%,82% 100%,18% 100%,0 38%);background:var(--panel-2)}
+.badge.got .gem{background:linear-gradient(160deg,var(--gold),var(--violet))}
+.badge:not(.got){opacity:.55}
+.badge b{font-family:var(--display);font-weight:400;font-size:18px}
+
+/* FX */
+.pop{position:fixed;z-index:60;pointer-events:none;font:22px var(--display);color:var(--gold);text-shadow:0 2px 0 #000;animation:pop 1s ease-out forwards}
+@keyframes pop{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-60px)}}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+.modal{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(10,5,20,.7);padding:16px}
+.modal .panel{max-width:420px;width:100%;text-align:center;border-color:var(--gold)}
+.modal h2{font-size:40px;color:var(--gold)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:65;background:var(--panel-2);border:1px solid var(--violet);padding:10px 16px;border-radius:12px;max-width:calc(100% - 32px)}
+/* Paste + guided solve */
+.paste-panel{border-color:var(--violet);background:linear-gradient(170deg,#2b1b52,var(--panel) 60%)}
+textarea.paste{min-height:150px}
+.sr{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.step .stxt{white-space:pre-line}
+.step .guide{flex:none;padding:6px 10px;font-size:14px;border-radius:8px;border:1px solid var(--gold);background:transparent;color:var(--gold);font-weight:700}
+.qbox{background:var(--panel-2);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;padding:12px 14px;white-space:pre-line;font-size:19px;overflow-wrap:anywhere}
+.solved-banner{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#16382b;border:1px solid var(--mint);border-radius:12px;padding:10px 14px;color:var(--mint)}
+.lang button{border:1px solid var(--line);background:var(--panel-2);border-radius:99px;padding:6px 14px}
+.lang button[aria-pressed="true"]{background:var(--gold);color:#2a1a00;border-color:var(--gold);font-weight:700}
+.qnav{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.qnav button{width:100%;text-align:left;display:flex;gap:8px;align-items:flex-start;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.qnav button[aria-current="true"]{border-color:var(--gold)}
+.qnav .n{font:12px var(--pixel);color:var(--muted);padding-top:3px;flex:none}
+.qnav .t{flex:1;min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.qnav .done .t{text-decoration:line-through;color:var(--muted)}
+details>summary{cursor:pointer;list-style-position:inside}
+/* Books */
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.book{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.cover{height:118px;padding:14px 14px 12px 26px;position:relative;display:flex;flex-direction:column;justify-content:flex-end;color:#fff;cursor:pointer;border:0;text-align:left;width:100%}
+.cover::before{content:"";position:absolute;left:10px;top:0;bottom:0;width:4px;background:rgba(255,255,255,.35)}
+.cover b{font:21px/1.1 var(--display);text-wrap:balance}
+.book .meta{padding:10px 14px 14px;display:flex;flex-direction:column;gap:8px}
+.book .meta .row{justify-content:space-between}
+.reader-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.reader-title{font:20px var(--display);font-weight:400;flex:1 1 160px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pager .btn{padding:8px 14px}
+.pgnum{width:4.2em;padding:6px 8px;text-align:center;font-variant-numeric:tabular-nums}
+.hint{margin:0;color:var(--gold)}
+.page-wrap{position:relative;width:100%;max-width:900px;margin:0 auto;background:#fff;border-radius:6px;box-shadow:0 10px 30px rgba(0,0,0,.45);min-height:200px}
+.page-wrap canvas{display:block;width:100%;height:auto;border-radius:6px}
+.hl-layer{position:absolute;inset:0}
+.hl-layer.drawing{touch-action:none;cursor:crosshair}
+.hl{position:absolute;background:rgba(255,207,90,.38);border-bottom:3px solid #e0a800;border-radius:3px;mix-blend-mode:multiply}
+.hl.saved{cursor:pointer}
+.hl.solved{background:rgba(95,227,168,.35);border-bottom-color:#1f9a63}
+.hl .tag{position:absolute;right:-6px;top:-12px;background:var(--violet);color:#fff;font:11px var(--pixel);padding:2px 6px;border-radius:6px;mix-blend-mode:normal;white-space:nowrap}
+.hl.solved .tag{background:#1f9a63}
+.hl-pop{position:absolute;z-index:5;display:flex;gap:8px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--gold);border-radius:12px;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:calc(100% - 8px)}
+.page-loading{position:absolute;inset:0;display:grid;place-items:center;color:#5a4a7a;font:20px var(--display)}
+.paste-zone{border:2px dashed var(--gold);background:linear-gradient(170deg,#2e2410,var(--panel) 70%)}
+.paste-zone.over{border-style:solid;background:#3a2d10}
+.paste-target{border:2px dashed var(--line);border-radius:12px;padding:22px;text-align:center;font:20px var(--display);color:var(--gold);cursor:pointer}
+.paste-zone:focus-within .paste-target,.paste-zone:focus .paste-target{border-color:var(--gold);background:#2a2110}
+kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:1px 6px;color:var(--text)}
+.guide-img{max-width:100%;max-height:260px;object-fit:contain;align-self:flex-start;background:#fff;border-radius:8px;border:3px solid var(--gold)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<canvas id="confetti"></canvas>
+
+<header class="hud">
+  <div class="hud-in">
+    <div class="avatar" id="avatar" aria-hidden="true">P</div>
+    <div class="who">
+      <label for="heroName" class="px muted" style="font-size:10px">Hero name</label>
+      <input id="heroName" maxlength="18" value="Player 1" autocomplete="off">
+      <span class="px rank" id="rank">Novice Scholar</span>
+    </div>
+    <div class="xpbox">
+      <div class="xprow px"><span>XP</span><span id="xpText">0 / 100</span></div>
+      <div class="bar" role="progressbar" aria-label="Experience toward next level" id="xpBarWrap"><i id="xpBar"></i></div>
+    </div>
+    <div class="stats">
+      <div class="stat lvl"><span class="px muted">Level</span><b id="lvl">1</b></div>
+      <div class="stat fire"><span class="px muted">Streak</span><b id="streak">0</b></div>
+      <button class="icon-btn px" id="soundBtn" aria-pressed="true" title="Sound effects">Sound on</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-books" aria-selected="true" data-tab="books">My Books</button>
+    <button role="tab" id="tab-buddy" aria-selected="false" data-tab="buddy">Study Buddy</button>
+    <button role="tab" id="tab-quests" aria-selected="false" data-tab="quests">Quests</button>
+    <button role="tab" id="tab-focus" aria-selected="false" data-tab="focus">Focus</button>
+    <button role="tab" id="tab-trophies" aria-selected="false" data-tab="trophies">Trophies</button>
+  </nav>
+
+  <!-- BOOKS -->
+  <section id="view-books" class="stack">
+    <div id="shelf" class="stack">
+      <div class="panel stack paste-panel">
+        <div class="section-title" style="margin:0">
+          <h2>My books</h2>
+          <span class="px muted">Add a book once. Then just highlight the question.</span>
+        </div>
+        <div class="row">
+          <label class="lbl"><span class="px muted">Book name</span>
+            <input class="field" id="bookTitle" maxlength="60" placeholder="e.g. Μαθηματικά Α΄ Γυμνασίου" autocomplete="off"></label>
+          <label class="lbl"><span class="px muted">Subject</span>
+            <select class="field" id="bookSubject"><option>Mathematics (Μαθηματικά)</option><option>Modern Greek (Νεοελληνική Γλώσσα)</option><option>Greek Literature (Λογοτεχνία)</option><option>Ancient Greek (Αρχαία)</option><option>Physics (Φυσική)</option><option>Biology (Βιολογία)</option><option>Geography (Γεωγραφία)</option><option>History (Ιστορία)</option><option>Religious Studies (Θρησκευτικά)</option><option>English (Αγγλικά)</option><option>French / German</option><option>Computing (Πληροφορική)</option><option>Technology (Τεχνολογία)</option><option>Home Economics (Οικιακή Οικονομία)</option><option>Other</option></select></label>
+        </div>
+        <div class="row">
+          <label class="btn gold" for="bookFile" tabindex="0">Add a PDF book</label>
+          <input type="file" id="bookFile" accept="application/pdf,.pdf" class="sr">
+          <label class="btn" for="bookPhotos" tabindex="0">Add photos of pages</label>
+          <input type="file" id="bookPhotos" accept="image/*" multiple class="sr">
+          <span class="muted" id="bookStatus" role="status"></span>
+        </div>
+        <p class="muted" style="margin:0;font-size:15px">Your books stay on this phone or computer. They are not uploaded anywhere. Only the part you highlight is sent to Study Buddy.</p>
+      </div>
+      <div class="panel stack paste-zone" id="pasteZone" tabindex="0" role="button" aria-label="Paste a screenshot here">
+        <div class="section-title" style="margin:0">
+          <h2 style="font-size:24px">Book in Apple Books? Paste a screenshot</h2>
+          <span class="px muted">No PDF needed</span>
+        </div>
+        <ol style="margin:0;padding-left:1.2em">
+          <li>Open the book in the <b>Books</b> app and go to the page.</li>
+          <li>Press <kbd>Control</kbd> + <kbd>Shift</kbd> + <kbd>⌘</kbd> + <kbd>4</kbd> and drag over the page (or just the question). This copies it.</li>
+          <li>Click this box and press <kbd>⌘</kbd> + <kbd>V</kbd>. You can also drop picture files here.</li>
+        </ol>
+        <div class="paste-target" id="pasteTarget">Click here, then press ⌘V</div>
+        <span class="muted" id="pasteStatus" role="status"></span>
+      </div>
+      <div class="shelf" id="shelfList"></div>
+      <div class="panel stack">
+        <h3 style="font-size:20px">Where to get his school books</h3>
+        <p style="margin:0">All Greek school books are free from the Ministry of Education's official e-book library.</p>
+        <ol style="margin:0;padding-left:1.2em">
+          <li>Open <a href="https://ebooks.edu.gr/ebooks/v2/class-main.jsp?classcode=K07" target="_blank" rel="noopener" style="color:var(--gold)">ebooks.edu.gr → Α΄ Γυμνασίου</a> (opens in a new tab).</li>
+          <li>Pick the subject, then download the <b>PDF</b> of the student book (Βιβλίο Μαθητή) or workbook (Τετράδιο Εργασιών).</li>
+          <li>Come back here and press <b>Add a PDF book</b>.</li>
+        </ol>
+        <p class="muted" style="margin:0;font-size:15px">Some schools now use a different book from the approved list (πολλαπλό βιβλίο). If his book isn't on the site, take photos of the pages instead.</p>
+      </div>
+    </div>
+
+    <div id="reader" class="stack" hidden>
+      <div class="reader-bar">
+        <button class="btn ghost" id="shelfBack">← Books</button>
+        <b class="reader-title" id="readerTitle"></b>
+        <div class="row pager">
+          <button class="btn ghost" id="pgPrev" aria-label="Previous page">‹</button>
+          <label class="px">Page <input id="pgNum" type="number" min="1" class="field pgnum"> / <span id="pgTotal"></span></label>
+          <button class="btn ghost" id="pgNext" aria-label="Next page">›</button>
+        </div>
+        <button class="btn gold" id="hlToggle" aria-pressed="true">Highlighter: ON</button>
+      </div>
+      <p class="muted" id="readerPasteHint" style="margin:0;font-size:15px" hidden>Tip: press ⌘V any time to add another screenshot to this book.</p>
+      <p class="hint" id="readerHint">Drag your finger or mouse across a question to highlight it. You can include several questions in one highlight.</p>
+      <div class="page-wrap" id="pageWrap">
+        <canvas id="pageCanvas"></canvas>
+        <div class="hl-layer drawing" id="hlLayer"></div>
+        <div class="hl-pop" id="hlPop" hidden>
+          <button class="btn gold" id="solveBtn">Solve this with Buddy</button>
+          <button class="btn ghost" id="hlCancel">Cancel</button>
+        </div>
+        <div class="page-loading" id="pageLoading" hidden>Opening page…</div>
+      </div>
+      <div class="row" style="justify-content:center">
+        <button class="btn ghost" id="pgPrev2">‹ Previous page</button>
+        <button class="btn ghost" id="pgNext2">Next page ›</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUESTS -->
+  <section id="view-quests" class="grid2" hidden>
+    <div class="stack">
+      <form class="panel stack paste-panel" id="newQuest">
+        <div class="section-title" style="margin:0">
+          <h2>No book? Paste homework</h2>
+          <span class="px muted">Paste it. Buddy turns it into a quest.</span>
+        </div>
+        <label class="lbl"><span class="px muted">Paste your assignment here</span>
+          <textarea class="field paste" id="qNotes" maxlength="6000" placeholder="Copy everything the teacher gave you, for example:&#10;&#10;Ασκήσεις σελ. 45&#10;1. Να απλοποιήσετε το κλάσμα 15/25&#10;2. Να βρείτε το ΕΚΠ των 6 και 8&#10;3. Ο Νίκος έχει 24 πορτοκάλια και δίνει τα 3/8 στη Μαρία. Πόσα παίρνει η Μαρία;"></textarea></label>
+        <div class="row" id="photoRow" hidden>
+          <label class="btn ghost" for="qPhoto" style="cursor:pointer">Or take a photo of it</label>
+          <input type="file" id="qPhoto" accept="image/*" capture="environment" class="sr">
+          <span class="muted" id="photoName"></span>
+        </div>
+        <div class="row">
+          <label class="lbl"><span class="px muted">Subject</span>
+            <select class="field" id="qSubject">
+              <option value="">Let Buddy guess</option><option>Mathematics (Μαθηματικά)</option><option>Modern Greek (Νεοελληνική Γλώσσα)</option><option>Greek Literature (Λογοτεχνία)</option><option>Ancient Greek (Αρχαία)</option><option>Physics (Φυσική)</option><option>Biology (Βιολογία)</option><option>Geography (Γεωγραφία)</option><option>History (Ιστορία)</option><option>Religious Studies (Θρησκευτικά)</option><option>English (Αγγλικά)</option><option>French / German</option><option>Computing (Πληροφορική)</option><option>Technology (Τεχνολογία)</option><option>Home Economics (Οικιακή Οικονομία)</option><option>Other</option>
+            </select></label>
+          <label class="lbl"><span class="px muted">Due date</span>
+            <input class="field" type="date" id="qDue"></label>
+        </div>
+        <div class="row">
+          <button class="btn gold" type="submit" id="addQuestBtn">Turn it into a quest +</button>
+          <span class="muted" id="addStatus" role="status"></span>
+        </div>
+      </form>
+      <div class="section-title">
+        <h2>Your quests</h2>
+        <span class="muted">Each question is one step. Solve them one at a time.</span>
+      </div>
+      <div id="questList" class="stack"></div>
+    </div>
+    <aside class="stack">
+      <div class="panel stack">
+        <h3 style="font-size:20px">How to play</h3>
+        <ol style="margin:0;padding-left:1.2em" class="muted">
+          <li>Paste your homework (or snap a photo). Buddy splits it into questions.</li>
+          <li>Press <b style="color:var(--text)">Guide me</b> on a question.</li>
+          <li>Buddy explains what it's asking and gives you <b style="color:var(--text)">one small step</b> at a time. You do the work.</li>
+          <li>Type your answer. Buddy checks it. Solve it to earn XP!</li>
+        </ol>
+        <p class="px muted" style="margin:0">+10 XP per question · +50 XP per quest · +25 XP per focus run</p>
+      </div>
+      <div class="panel stack">
+        <h3 style="font-size:20px">Level up faster</h3>
+        <ul style="margin:0;padding-left:1.2em" class="muted">
+          <li>Try each step yourself before asking for a hint.</li>
+          <li>Use <b style="color:var(--text)">Focus</b> mode with a short timer.</li>
+          <li>Come back every day to grow your streak.</li>
+        </ul>
+      </div>
+    </aside>
+  </section>
+
+  <!-- FOCUS -->
+  <section id="view-focus" class="grid2" hidden>
+    <div class="panel stack center" id="focusMain">
+      <span class="px muted" id="focusQuestName">No quest selected</span>
+      <div class="focus-step" id="focusStep">Pick a quest on the Quest Board and press Focus.</div>
+      <div class="timer-wrap">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="#2a1d48" stroke-width="12"/>
+          <circle id="ring" cx="60" cy="60" r="52" fill="none" stroke="#9d6bff" stroke-width="12" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-num"><div><b id="clock">15:00</b><span class="px muted" id="clockLbl">Ready</span></div></div>
+      </div>
+      <div class="row presets" style="justify-content:center" id="presets">
+        <button data-min="5">5 min</button><button data-min="10">10 min</button>
+        <button data-min="15" aria-pressed="true">15 min</button><button data-min="25">25 min</button>
+      </div>
+      <div class="row" style="justify-content:center">
+        <button class="btn" id="startBtn">Start</button>
+        <button class="btn ghost" id="resetBtn">Reset</button>
+        <button class="btn gold" id="focusGuideBtn" disabled>Guide me</button>
+        <button class="btn mint" id="stepDoneBtn" disabled>Step done ✓</button>
+      </div>
+      <div class="panel break-card stack" id="breakCard" hidden>
+        <h3 style="font-size:24px;color:var(--mint)">Brain break!</h3>
+        <p id="breakIdea" style="margin:0"></p>
+        <div class="row" style="justify-content:center">
+          <button class="btn mint" id="breakBtn">Start 3 min break</button>
+          <button class="btn ghost" id="skipBreakBtn">Skip</button>
+        </div>
+      </div>
+    </div>
+    <aside class="stack">
+      <div class="panel stack">
+        <h3 style="font-size:20px">Thought parking lot</h3>
+        <p class="muted" style="margin:0">Random thought popped up? Park it here and get back to the step. You can check it after.</p>
+        <form class="addstep" id="parkForm">
+          <input class="field" id="parkInput" maxlength="120" placeholder="e.g. text Sam about Saturday" autocomplete="off">
+          <button class="btn" type="submit">Park</button>
+        </form>
+        <ul class="parked" id="parkList"></ul>
+      </div>
+      <div class="panel stack">
+        <h3 style="font-size:20px">Focus tips</h3>
+        <ul class="muted" style="margin:0;padding-left:1.2em">
+          <li>Put your phone in another room or face-down.</li>
+          <li>Only look at the one step on screen.</li>
+          <li>Short timer feels too long? Start with 5 min. Starting is the hard part.</li>
+        </ul>
+      </div>
+    </aside>
+  </section>
+
+  <!-- BUDDY -->
+  <section id="view-buddy" class="grid2" hidden>
+    <div class="stack">
+    <div class="notice" id="aiNotice" hidden>Study Buddy runs on Claude. Open this page while signed in to Claude and allow it when asked. Everything else on the page works without it.</div>
+    <div class="panel stack" id="guidePanel">
+      <div class="section-title" style="margin:0"><h2>Guided solve</h2><span class="px muted" id="guideWhere"></span></div>
+      <div class="row lang" role="group" aria-label="Help language"><span class="px muted">Help me in</span>
+        <button type="button" data-lang="English">English</button><button type="button" data-lang="Greek">Ελληνικά</button></div>
+      <div id="guideEmpty" class="empty">Open a book in <b>My Books</b> and highlight a question, or pick one on the right. Buddy will walk you through it step by step.</div>
+      <div id="guideBody" class="stack" hidden>
+        <img id="guideImg" class="guide-img" alt="The part of the book you highlighted" hidden>
+        <div class="qbox" id="guideQ"></div>
+        <div class="chat" id="guideChat" aria-live="polite"></div>
+        <div class="solved-banner" id="solvedBanner" hidden>
+          <b>Buddy says you got it!</b>
+          <button class="btn mint" id="claimBtn">Claim +10 XP</button>
+        </div>
+        <form class="stack" id="guideForm">
+          <label class="lbl"><span class="px muted">Your answer or what you tried</span>
+            <textarea class="field" id="guideInput" maxlength="1500" rows="2" placeholder="Type your working or your answer, then press Check my work"></textarea></label>
+          <div class="row">
+            <button class="btn" type="submit">Check my work</button>
+            <button class="btn gold" type="button" data-g="hint">I'm stuck, hint please</button>
+            <button class="btn ghost" type="button" data-g="meaning">What does it mean?</button>
+            <button class="btn ghost" type="button" data-g="example">Show a similar example</button>
+            <button class="btn ghost" type="button" id="stopGuide" hidden>Stop</button>
+          </div>
+        </form>
+        <div class="row">
+          <button class="btn ghost" id="restartGuide">Start this question over</button>
+          <button class="btn ghost" id="markDoneGuide">I finished it myself ✓</button>
+          <button class="btn ghost" id="nextQ">Next question →</button>
+        </div>
+      </div>
+    </div>
+    <details class="panel stack" id="askPanel">
+      <summary><h2 style="display:inline;font-size:22px">Ask anything or take a quiz</h2></summary>
+      <div class="stack" style="margin-top:12px">
+      <div class="row">
+        <label class="lbl"><span class="px muted">Which quest?</span>
+          <select class="field" id="buddyQuest"></select></label>
+        <label class="lbl"><span class="px muted">Class</span>
+          <select class="field" id="gradeSel">
+            <option value="A">Α΄ Γυμνασίου</option><option value="B">Β΄ Γυμνασίου</option><option value="C">Γ΄ Γυμνασίου</option>
+          </select></label>
+      </div>
+      <label class="lbl"><span class="px muted">What are you stuck on?</span>
+        <textarea class="field" id="buddyAsk" maxlength="3000" placeholder="e.g. I don't get how to find the slope of a line"></textarea></label>
+      <div class="row">
+        <button class="btn" data-mode="explain">Explain it simply</button>
+        <button class="btn gold" data-mode="hint">Give me a hint</button>
+        <button class="btn mint" data-mode="quiz">Quiz me (+XP)</button>
+        <button class="btn ghost" id="stopAi" hidden>Stop</button>
+      </div>
+      <div class="chat" id="chat"></div>
+      <form class="addstep" id="followForm" hidden>
+        <input class="field" id="followInput" maxlength="1000" placeholder="Ask a follow-up question" autocomplete="off">
+        <button class="btn" type="submit">Ask</button>
+      </form>
+      <div id="quizBox" class="stack"></div>
+      </div>
+    </details>
+    </div>
+    <aside class="stack">
+      <div class="panel stack">
+        <h3 style="font-size:20px">Questions</h3>
+        <select class="field" id="navQuest" aria-label="Quest"></select>
+        <ol class="qnav" id="qNav"></ol>
+      </div>
+      <div class="panel stack">
+        <h3 style="font-size:20px">Study Buddy's rules</h3>
+        <ul class="muted" style="margin:0;padding-left:1.2em">
+          <li>Buddy shows you how. It won't just give you the answer. That way you can do it in class tests too.</li>
+          <li>One small step at a time. Do the step, then tell Buddy what you got.</li>
+          <li>Wrong answers are fine. Buddy helps you find the mistake.</li>
+        </ul>
+      </div>
+    </aside>
+  </section>
+
+  <!-- TROPHIES -->
+  <section id="view-trophies" hidden class="stack">
+    <div class="section-title"><h2>Trophy room</h2><span class="muted" id="trophyCount"></span></div>
+    <div class="badges" id="badgeGrid"></div>
+    <div class="panel row" style="justify-content:space-around;text-align:center" id="statRow"></div>
+    <div class="row"><button class="btn ghost" id="resetAll">Reset all progress</button><span id="resetConfirm" hidden class="row"><span>Really erase everything?</span><button class="btn" id="resetYes">Yes, erase</button><button class="btn ghost" id="resetNo">Keep it</button></span></div>
+  </section>
+</main>
+
+<div class="modal" id="levelModal" hidden>
+  <div class="panel stack">
+    <span class="px muted">Level up!</span>
+    <h2 id="lvlUpNum">Level 2</h2>
+    <p id="lvlUpRank" style="margin:0;font-size:20px"></p>
+    <button class="btn gold" id="lvlClose">Keep going</button>
+  </div>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script>
+(() => {
+/* ---------- state ---------- */
+const KEY = "homework-quest-v1";
+const uid = () => Math.random().toString(36).slice(2, 9);
+const today = () => new Date().toISOString().slice(0, 10);
+const addDays = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+
+function exampleQuests() {
+  const st = (text, done = false) => ({ id: uid(), text, min: 10, done, chat: [] });
+  return [
+    { id: uid(), title: "Κλάσματα: ασκήσεις σελ. 45", subject: "Mathematics (Μαθηματικά)", due: addDays(1), example: true,
+      notes: "Ασκήσεις σελ. 45\n1. Να απλοποιήσετε το κλάσμα 15/25\n2. Να βρείτε το ΕΚΠ των 6 και 8\n3. Να υπολογίσετε: 2/3 + 1/4\n4. Ο Νίκος έχει 24 πορτοκάλια και δίνει τα 3/8 στη Μαρία. Πόσα πορτοκάλια παίρνει η Μαρία;",
+      steps: [st("1. Να απλοποιήσετε το κλάσμα 15/25", true), st("2. Να βρείτε το ΕΚΠ των 6 και 8"), st("3. Να υπολογίσετε: 2/3 + 1/4"), st("4. Ο Νίκος έχει 24 πορτοκάλια και δίνει τα 3/8 στη Μαρία. Πόσα πορτοκάλια παίρνει η Μαρία;")] },
+    { id: uid(), title: "Μετρήσεις μήκους", subject: "Physics (Φυσική)", due: addDays(4), example: true,
+      notes: "Φυσική - Εργασία\n1. Ποια είναι η μονάδα μέτρησης του μήκους στο Διεθνές Σύστημα (S.I.);\n2. Να μετατρέψετε τα 2,5 m σε cm.\n3. Γιατί μετράμε πολλές φορές το ίδιο μήκος και βρίσκουμε τη μέση τιμή;",
+      steps: [st("1. Ποια είναι η μονάδα μέτρησης του μήκους στο Διεθνές Σύστημα (S.I.);"), st("2. Να μετατρέψετε τα 2,5 m σε cm."), st("3. Γιατί μετράμε πολλές φορές το ίδιο μήκος και βρίσκουμε τη μέση τιμή;")] }
+  ];
+}
+const GRADES = ["A", "B", "C"];
+const GRADE_NAME = { A: "Α΄ Γυμνασίου", B: "Β΄ Γυμνασίου", C: "Γ΄ Γυμνασίου" };
+const SAMPLE_BOOK = () => ({ id: "sample", title: "Try it: sample page", subject: "Mathematics (Μαθηματικά)", type: "sample", pages: 1, lastPage: 1, hl: [] });
+const fresh = () => ({ name: "Player 1", xp: 0, streak: 0, lastDay: null, quests: exampleQuests(), active: null,
+  focusRuns: 0, stepsDone: 0, questsDone: 0, quizRight: 0, badges: [], parked: [], sound: true, grade: "A", guide: null, books: [SAMPLE_BOOK()], helpLang: "English" });
+
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch { S = fresh(); }
+S = Object.assign(fresh(), S);
+if (!GRADES.includes(S.grade)) S.grade = "A";
+if (!S.books.length) S.books = [SAMPLE_BOOK()];
+for (const q of S.quests) for (const s of q.steps) s.chat = s.chat || [];
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null) n.append(c.nodeType ? c : document.createTextNode(c));
+  return n;
+};
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function md(text) {
+  const lines = esc(text).split("\n"); let html = "", list = null;
+  const inline = s => s.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`(.+?)`/g, "<code>$1</code>");
+  const close = () => { if (list) { html += `</${list}>`; list = null; } };
+  for (const raw of lines) {
+    const l = raw.trim();
+    let m;
+    if ((m = l.match(/^[-*•]\s+(.*)/))) { if (list !== "ul") { close(); html += "<ul>"; list = "ul"; } html += `<li>${inline(m[1])}</li>`; }
+    else if ((m = l.match(/^\d+[.)]\s+(.*)/))) { if (list !== "ol") { close(); html += "<ol>"; list = "ol"; } html += `<li>${inline(m[1])}</li>`; }
+    else if ((m = l.match(/^#{1,4}\s+(.*)/))) { close(); html += `<h4>${inline(m[1])}</h4>`; }
+    else if (l) { close(); html += `<p>${inline(l)}</p>`; }
+    else close();
+  }
+  close(); return html;
+}
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2800); }
+
+/* ---------- sound ---------- */
+let actx;
+function beep(notes) {
+  if (!S.sound) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    let t = actx.currentTime;
+    for (const [f, d] of notes) {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = "square"; o.frequency.value = f;
+      g.gain.setValueAtTime(.06, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+      o.connect(g).connect(actx.destination); o.start(t); o.stop(t + d); t += d * .8;
+    }
+  } catch {}
+}
+const SFX = { coin: [[988, .08], [1319, .18]], clear: [[523, .1], [659, .1], [784, .1], [1047, .3]], tick: [[660, .05]], up: [[523, .12], [784, .12], [1047, .12], [1568, .4]] };
+
+/* ---------- confetti ---------- */
+const cv = $("#confetti"), cx = cv.getContext("2d"); let parts = [], raf;
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function confetti(n = 80) {
+  if (reduce) return;
+  cv.width = innerWidth; cv.height = innerHeight;
+  const cols = ["#9d6bff", "#ffcf5a", "#5fe3a8", "#ff7aa8", "#dccbff"];
+  for (let i = 0; i < n; i++) parts.push({ x: innerWidth / 2 + (Math.random() - .5) * 200, y: innerHeight * .35, vx: (Math.random() - .5) * 12, vy: -Math.random() * 12 - 4, r: Math.random() * 6 + 4, c: cols[i % cols.length], a: Math.random() * 6, life: 90 + Math.random() * 40 });
+  cancelAnimationFrame(raf); (function loop() {
+    cx.clearRect(0, 0, cv.width, cv.height);
+    parts = parts.filter(p => p.life-- > 0);
+    for (const p of parts) { p.vy += .35; p.x += p.vx; p.y += p.vy; p.a += .2; cx.save(); cx.translate(p.x, p.y); cx.rotate(p.a); cx.fillStyle = p.c; cx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); cx.restore(); }
+    if (parts.length) raf = requestAnimationFrame(loop); else cx.clearRect(0, 0, cv.width, cv.height);
+  })();
+}
+function popAt(target, text) {
+  const r = target?.getBoundingClientRect?.() || { left: innerWidth / 2, top: innerHeight / 2, width: 0 };
+  const p = el("div", { class: "pop" }, text); p.style.left = (r.left + r.width / 2) + "px"; p.style.top = r.top + "px";
+  document.body.append(p); setTimeout(() => p.remove(), 1000);
+}
+
+/* ---------- XP / levels ---------- */
+const RANKS = ["Novice Scholar", "Page Turner", "Idea Hunter", "Brain Knight", "Focus Mage", "Quest Champion", "Homework Hero", "Legendary Learner"];
+const need = lvl => 100 + (lvl - 1) * 50;
+function levelInfo(xp) { let l = 1; while (xp >= need(l)) { xp -= need(l); l++; } return { lvl: l, into: xp, need: need(l) }; }
+const rankOf = lvl => RANKS[Math.min(RANKS.length - 1, Math.floor((lvl - 1) / 2))];
+function gainXP(n, from) {
+  const before = levelInfo(S.xp).lvl;
+  S.xp += n; popAt(from, `+${n} XP`);
+  markStreak();
+  const after = levelInfo(S.xp).lvl;
+  if (after > before) {
+    beep(SFX.up); confetti(140);
+    $("#lvlUpNum").textContent = "Level " + after; $("#lvlUpRank").textContent = "New rank: " + rankOf(after);
+    $("#levelModal").hidden = false; $("#lvlClose").focus();
+  } else beep(SFX.coin);
+  checkBadges(); save(); renderHUD();
+}
+function markStreak() {
+  const t = today(); if (S.lastDay === t) return;
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  S.streak = S.lastDay === y.toISOString().slice(0, 10) ? S.streak + 1 : 1; S.lastDay = t;
+}
+function renderHUD() {
+  const { lvl, into, need } = levelInfo(S.xp);
+  $("#lvl").textContent = lvl; $("#rank").textContent = rankOf(lvl);
+  $("#xpText").textContent = `${into} / ${need}`; $("#xpBar").style.width = (into / need * 100) + "%";
+  $("#xpBarWrap").setAttribute("aria-valuenow", Math.round(into / need * 100));
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  const alive = S.lastDay === today() || S.lastDay === y.toISOString().slice(0, 10);
+  $("#streak").textContent = alive ? S.streak : 0;
+  $("#avatar").textContent = (S.name.trim()[0] || "P").toUpperCase();
+  $("#soundBtn").textContent = S.sound ? "Sound on" : "Sound off"; $("#soundBtn").setAttribute("aria-pressed", S.sound);
+}
+$("#heroName").value = S.name;
+$("#heroName").addEventListener("input", e => { S.name = e.target.value || "Player 1"; save(); renderHUD(); });
+$("#soundBtn").onclick = () => { S.sound = !S.sound; save(); renderHUD(); };
+$("#lvlClose").onclick = () => $("#levelModal").hidden = true;
+
+/* ---------- badges ---------- */
+const BADGES = [
+  ["first", "First Step", "Finish your first step", () => S.stepsDone >= 1],
+  ["clear", "Quest Cleared", "Finish a whole quest", () => S.questsDone >= 1],
+  ["clear5", "Quest Master", "Finish 5 quests", () => S.questsDone >= 5],
+  ["focus1", "Locked In", "Complete a focus run", () => S.focusRuns >= 1],
+  ["focus10", "Deep Diver", "Complete 10 focus runs", () => S.focusRuns >= 10],
+  ["steps25", "Step Machine", "Finish 25 steps", () => S.stepsDone >= 25],
+  ["quiz", "Quiz Whiz", "Get 5 quiz answers right", () => S.quizRight >= 5],
+  ["streak3", "On Fire", "3-day streak", () => S.streak >= 3],
+  ["streak7", "Unstoppable", "7-day streak", () => S.streak >= 7],
+  ["lvl5", "Rising Star", "Reach level 5", () => levelInfo(S.xp).lvl >= 5],
+];
+function checkBadges() {
+  for (const [id, name, , test] of BADGES) if (!S.badges.includes(id) && test()) { S.badges.push(id); setTimeout(() => toast(`Trophy unlocked: ${name}!`), 600); }
+}
+
+/* ---------- tabs ---------- */
+function showTab(name) {
+  document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === name));
+  for (const v of ["books", "quests", "focus", "buddy", "trophies"]) $("#view-" + v).hidden = v !== name;
+  if (name === "books" && R.book) drawHighlights();
+  if (name === "focus") renderFocus(); if (name === "buddy") renderBuddy(); if (name === "trophies") renderTrophies();
+  try { sessionStorage.setItem(KEY + "-tab", name); } catch {}
+}
+document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+
+/* ---------- quests ---------- */
+function dueChip(due) {
+  if (!due) return null;
+  const days = Math.round((new Date(due + "T00:00") - new Date(today() + "T00:00")) / 864e5);
+  if (days < 0) return el("span", { class: "chip late" }, `${-days}d overdue`);
+  if (days === 0) return el("span", { class: "chip late" }, "Due today");
+  if (days <= 2) return el("span", { class: "chip soon" }, days === 1 ? "Due tomorrow" : "Due in 2 days");
+  return el("span", { class: "chip" }, `Due in ${days} days`);
+}
+const findQ = id => S.quests.find(q => q.id === id);
+function toggleStep(q, s, btn) {
+  s.done = !s.done;
+  if (s.done) {
+    S.stepsDone++; gainXP(10, btn);
+    if (q.steps.length && q.steps.every(x => x.done) && !q.cleared) {
+      q.cleared = true; S.questsDone++; confetti(160); beep(SFX.clear);
+      setTimeout(() => gainXP(50, btn), 500); toast(`Quest cleared: ${q.title}!`);
+    }
+  } else { S.stepsDone = Math.max(0, S.stepsDone - 1); }
+  save(); renderQuests();
+}
+function renderQuests() {
+  const list = $("#questList"); list.replaceChildren();
+  if (!S.quests.length) { list.append(el("div", { class: "empty" }, "No quests yet. Paste your homework in the box above.")); return; }
+  const sorted = [...S.quests].sort((a, b) => (!!a.cleared - !!b.cleared) || ((b.id === S.active) - (a.id === S.active)) || ((a.due || "9") > (b.due || "9") ? 1 : -1));
+  for (const q of sorted) {
+    const done = q.steps.filter(s => s.done).length, pct = q.steps.length ? done / q.steps.length * 100 : 0;
+    const stepInput = el("input", { class: "field", placeholder: "Add another question or step…", maxlength: 600, "aria-label": "New question for " + q.title });
+    const card = el("article", { class: "quest" + (S.active === q.id ? " active" : "") + (q.cleared ? " cleared" : "") },
+      el("div", { class: "qhead" },
+        el("div", {}, el("h3", {}, q.title),
+          el("div", { class: "qmeta" }, el("span", { class: "chip" }, q.subject), dueChip(q.due), q.cleared ? el("span", { class: "chip", style: "color:var(--mint)" }, "Cleared") : null, q.example ? el("span", { class: "chip ex" }, "Example") : null)),
+        el("button", { class: "x", title: "Delete quest", "aria-label": "Delete quest " + q.title, onclick: () => { S.quests = S.quests.filter(x => x !== q); if (S.active === q.id) S.active = null; save(); renderQuests(); } }, "✕")),
+      el("div", { class: "row", style: "gap:10px" }, el("div", { class: "bar", style: "flex:1" }, el("i", { style: `width:${pct}%` })), el("span", { class: "px muted" }, `${done}/${q.steps.length}`)),
+      el("ul", { class: "steps" }, q.steps.map(s => el("li", { class: "step" + (s.done ? " done" : "") },
+        el("button", { class: "check", "aria-label": (s.done ? "Undo: " : "Finish: ") + s.text, onclick: e => toggleStep(q, s, e.currentTarget) }, s.done ? "✓" : ""),
+        el("span", { class: "stxt" }, s.text),
+        s.done ? null : el("button", { class: "guide", onclick: () => openGuide(q.id, s.id) }, s.chat?.length ? "Continue" : "Guide me"),
+        el("button", { class: "x", "aria-label": "Remove question", onclick: () => { q.steps = q.steps.filter(x => x !== s); save(); renderQuests(); } }, "✕")))),
+      el("form", { class: "addstep", onsubmit: e => { e.preventDefault(); const t = stepInput.value.trim(); if (!t) return; q.steps.push({ id: uid(), text: t, min: 10, done: false, chat: [] }); q.cleared = false; save(); renderQuests(); } },
+        stepInput, el("button", { class: "btn ghost", type: "submit" }, "Add")),
+      el("div", { class: "row" },
+        q.steps.some(s => !s.done) ? el("button", { class: "btn gold", onclick: () => openGuide(q.id, q.steps.find(s => !s.done).id) }, "Guide me through it") : null,
+        el("button", { class: "btn", onclick: () => { S.active = q.id; save(); showTab("focus"); } }, "Focus ▶"),
+        q.steps.length ? null : el("button", { class: "btn ghost", onclick: e => breakDown(q, e.currentTarget) }, "Split into steps")));
+    list.append(card);
+  }
+}
+/* Split pasted text into numbered questions without AI */
+function splitLocally(text) {
+  const lines = text.split(/\r?\n/);
+  const qs = []; let cur = null;
+  const start = /^\s*(\(?\d{1,2}[.):]|\(?[a-h][.)]\s|Q\.?\s*\d+|Question\s+\d+)/i;
+  for (const l of lines) {
+    if (start.test(l)) { if (cur) qs.push(cur); cur = l.trim(); }
+    else if (cur && l.trim()) cur += "\n" + l.trim();
+  }
+  if (cur) qs.push(cur);
+  return qs.length ? qs : [text.trim().slice(0, 600)];
+}
+let photo = null;
+$("#qPhoto").addEventListener("change", e => { photo = e.target.files?.[0] || null; $("#photoName").textContent = photo ? photo.name : ""; });
+
+$("#newQuest").addEventListener("submit", async e => {
+  e.preventDefault();
+  const text = $("#qNotes").value.trim();
+  if (!text && !photo) { toast("Paste your homework in the box first."); $("#qNotes").focus(); return; }
+  const btn = $("#addQuestBtn"), status = $("#addStatus");
+  btn.disabled = true; status.textContent = "Buddy is reading your homework…";
+  let parsed = null;
+  await aiReady;
+  if (sample) {
+    try {
+      parsed = await sample.json(`A ${gradeDesc()} student pasted their homework assignment (usually in Greek)${photo ? " (the photo shows it)" : ""}. Split it into its separate questions or tasks, exactly as the teacher wrote them. Keep each question's number and full wording. If a question needs a shared passage, table or instruction to make sense, put that in "context" (keep it complete). Pick the subject from exactly one of: ${[...$("#qSubject").options].slice(1).map(o => o.value).join(", ")}.
+Reply with only JSON like {"title":"Κλάσματα σελ. 45","subject":"Mathematics (Μαθηματικά)","context":"","questions":["1. Να απλοποιήσετε το κλάσμα 15/25","2. Να βρείτε το ΕΚΠ των 6 και 8"]}
+title: at most 5 words, in the assignment's language. Keep questions in their original language. Do not answer the questions.
+
+Homework:
+${text || "(see the photo)"}`, photo ? { images: photo } : {});
+      if (!Array.isArray(parsed?.questions) || !parsed.questions.length) parsed = null;
+    } catch (err) { if (!text) { status.textContent = aiErr(err); btn.disabled = false; return; } }
+  }
+  if (!parsed && !text) { status.textContent = "Paste the homework as text so the page can read it."; btn.disabled = false; return; }
+  const questions = parsed ? parsed.questions.map(x => String(typeof x === "object" ? x.text ?? "" : x).trim()).filter(Boolean) : splitLocally(text);
+  const firstLine = (text.split("\n").find(l => l.trim()) || "New homework").trim();
+  const q = {
+    id: uid(), title: String(parsed?.title || firstLine).slice(0, 60),
+    subject: $("#qSubject").value || String(parsed?.subject || "Other").slice(0, 30),
+    due: $("#qDue").value,
+    notes: ((parsed?.context ? parsed.context + "\n\n" : "") + (text || questions.join("\n"))).slice(0, 6000),
+    steps: questions.slice(0, 40).map(t => ({ id: uid(), text: t.slice(0, 600), min: 10, done: false, chat: [] }))
+  };
+  S.quests.unshift(q); S.active = q.id; save();
+  e.target.reset(); photo = null; $("#photoName").textContent = "";
+  btn.disabled = false; status.textContent = "";
+  renderQuests();
+  toast(`Quest ready: ${q.steps.length} question${q.steps.length === 1 ? "" : "s"}. Press Guide me to start!`);
+});
+
+/* ---------- AI (Claude sample) ---------- */
+let sample = null, imgOK = false;
+const aiReady = window.claude?.use ? window.claude.use("sample").then(s => {
+  sample = s; renderBuddy();
+  s?.limits?.().then(l => { imgOK = !!l?.images; $("#photoRow").hidden = !l?.images; if (l?.images) $("#qPhoto").accept = l.images.mediaTypes.join(","); }).catch(() => {});
+  return s;
+}).catch(() => null) : Promise.resolve(null);
+function aiErr(e) {
+  const c = e?.code;
+  if (c === "not_granted" || c === "sampling_disabled" || c === "not_declared" || c === "capability_disabled") { sample = null; renderBuddy(); return "Study Buddy isn't switched on for this page, so it can't answer right now."; }
+  if (c === "rate_limited") return "Study Buddy needs a short rest. Try again in a minute.";
+  if (c === "session_expired") return "Sign in to Claude again, then try once more.";
+  if (c === "refused") return "Study Buddy can't help with that one. Try asking about the schoolwork itself.";
+  if (c === "invalid_json") return "Study Buddy got its answer jumbled. Press the button again.";
+  return "Something went wrong reaching Study Buddy. Press the button to try again.";
+}
+const gradeDesc = () => `${GRADE_NAME[S.grade]} (year ${"ABC".indexOf(S.grade) + 1} of Greek lower secondary school, Γυμνάσιο, about ${12 + "ABC".indexOf(S.grade)} years old)`;
+const langRule = () => S.helpLang === "Greek"
+  ? "Always reply in simple, friendly Modern Greek."
+  : "Always reply in simple English. The student goes to a Greek school, so questions and books are in Greek: the first time you use a key school term, add the Greek word in brackets, e.g. denominator (παρονομαστής), so they learn the word used in class.";
+const tutorRules = () => `You are "Study Buddy", a warm, upbeat tutor inside a homework game for ${S.name}, a ${gradeDesc()} student who finds it hard to keep focus. ${langRule()} Rules: simple words a ${GRADE_NAME[S.grade]} student understands; short sentences and short chunks (max about 150 words); one idea per bullet; bold the key word in each idea; give one everyday example; never just do the assignment for them; end with ONE quick check question they can answer in their head. Use plain Markdown (bullets, **bold**), no tables, no LaTeX (write maths like 3/8 × 24).`;
+function questContext(q) { return q ? `Their current assignment: "${q.title}" (${q.subject}).${q.notes ? " The full assignment: " + q.notes.slice(0, 3000) : ""}` : ""; }
+
+async function breakDown(q, btn) {
+  const fallback = [["Read the instructions and underline what you have to do", 5], ["Get your materials ready (book, notes, laptop)", 3], ["Do the first small part", 10], ["Do the next part", 10], ["Check your work and hand it in", 5]];
+  const add = arr => { q.steps.push(...arr.map(([t, m]) => ({ id: uid(), text: String(t).slice(0, 120), min: Math.max(2, Math.min(25, Number(m) || 10)), done: false, chat: [] }))); q.cleared = false; save(); renderQuests(); };
+  await aiReady;
+  if (!sample) { add(fallback); toast("Added starter steps. Edit them to match your assignment."); return; }
+  const old = btn.textContent; btn.disabled = true; btn.textContent = "Thinking…";
+  try {
+    const data = await sample.json(`Break this school assignment into 3 to 6 small, concrete steps for a ${gradeDesc()} student who struggles with focus. The first step must be very easy (under 5 minutes) to build momentum. Each step max 20 minutes and under 12 words, starting with a verb.\nAssignment: "${q.title}" (${q.subject}).${q.notes ? "\nInstructions: " + q.notes.slice(0, 1500) : ""}\nReply with only JSON like {"steps":[{"text":"Read the question and circle key words","minutes":5}]}`, { modelTier: "quick" });
+    const steps = Array.isArray(data?.steps) ? data.steps.filter(s => s && s.text).slice(0, 8) : [];
+    if (!steps.length) throw { code: "invalid_json" };
+    add(steps.map(s => [s.text, s.minutes])); toast("Quest split into bite-size steps!");
+  } catch (e) { if (e?.code !== "cancelled") toast(aiErr(e)); if (!sample) add(fallback); }
+  finally { btn.disabled = false; btn.textContent = old; }
+}
+
+/* ---------- Study Buddy ---------- */
+let buddyQ = S.active, turns = [], ctl = null, navQ = S.guide?.qid || S.active;
+function renderBuddy() {
+  const sel = $("#buddyQuest"); const cur = buddyQ;
+  sel.replaceChildren(el("option", { value: "" }, "No specific quest"), ...S.quests.map(q => el("option", { value: q.id }, q.title)));
+  sel.value = findQ(cur) ? cur : "";
+  $("#gradeSel").value = S.grade;
+  $("#aiNotice").hidden = !!sample;
+  renderGuide();
+}
+$("#buddyQuest").onchange = e => buddyQ = e.target.value;
+$("#gradeSel").onchange = e => { S.grade = e.target.value; save(); };
+
+async function ask(msgs, bubble) {
+  ctl = new AbortController(); $("#stopAi").hidden = false;
+  bubble.innerHTML = "<p class='muted'>Thinking…</p>";
+  try {
+    const { text } = await sample(msgs, { cache: false, signal: ctl.signal, onText: ({ text }) => bubble.innerHTML = md(text) });
+    return text;
+  } catch (e) {
+    if (e?.code === "cancelled") { bubble.innerHTML = e.text ? md(e.text) : "<p class='muted'>Stopped.</p>"; return e.text || null; }
+    bubble.innerHTML = (e?.text ? md(e.text) : "") + `<p class="muted">${esc(aiErr(e))}</p>`; return null;
+  } finally { $("#stopAi").hidden = true; }
+}
+$("#stopAi").onclick = () => ctl?.abort();
+
+document.querySelectorAll("[data-mode]").forEach(b => b.onclick = async () => {
+  await aiReady;
+  if (!sample) { $("#aiNotice").hidden = false; return; }
+  const question = $("#buddyAsk").value.trim(), q = findQ(buddyQ), mode = b.dataset.mode;
+  if (!question && !q) { toast("Type what you're stuck on, or pick a quest first."); $("#buddyAsk").focus(); return; }
+  if (mode === "quiz") return quiz(question, q, b);
+  const task = mode === "hint"
+    ? "Give ONE small hint that points them to the next step. Do NOT give the final answer. Then ask what they think the next step is."
+    : "Explain the idea simply, step by step, so they understand it well enough to do the work themselves.";
+  turns = [{ role: "user", content: `${tutorRules()}\n${questContext(q)}\n\n${task}\n\nStudent says: ${question || "I don't know where to start with this assignment."}` }];
+  const chat = $("#chat"); chat.replaceChildren(el("div", { class: "bubble-me" }, question || "Help me get started"));
+  const bubble = el("div", { class: "answer" }); chat.append(bubble); $("#quizBox").replaceChildren();
+  const text = await ask(turns, bubble);
+  if (text) { turns.push({ role: "assistant", content: text }); $("#followForm").hidden = false; }
+});
+$("#followForm").addEventListener("submit", async e => {
+  e.preventDefault(); const t = $("#followInput").value.trim(); if (!t || !sample) return;
+  $("#followInput").value = "";
+  turns.push({ role: "user", content: t }); if (turns.length > 13) turns.splice(1, 2);
+  const chat = $("#chat"); chat.append(el("div", { class: "bubble-me" }, t)); const bubble = el("div", { class: "answer" }); chat.append(bubble);
+  const text = await ask(turns, bubble);
+  if (text) turns.push({ role: "assistant", content: text }); else turns.pop();
+});
+
+async function quiz(question, q, btn) {
+  const box = $("#quizBox"); $("#chat").replaceChildren(); $("#followForm").hidden = true;
+  box.replaceChildren(el("p", { class: "muted" }, "Building your quiz…")); btn.disabled = true;
+  try {
+    const data = await sample.json(`Make a 3-question multiple-choice practice quiz for a ${gradeDesc()} student. Topic: ${question || "the key ideas needed for this assignment"}. ${questContext(q)} Questions should check understanding, easy to medium, each with 4 short choices. "why" is a one-sentence friendly explanation of the right answer. Reply with only JSON like {"questions":[{"q":"What is 1/2 + 1/4?","choices":["3/4","2/6","1/6","2/4"],"answer":0,"why":"Change 1/2 to 2/4, then 2/4 + 1/4 = 3/4."}]}`, { cache: false });
+    const qs = (data?.questions || []).filter(x => x?.q && Array.isArray(x.choices) && x.choices.length >= 2).slice(0, 5);
+    if (!qs.length) throw { code: "invalid_json" };
+    box.replaceChildren(el("h3", { style: "font-size:22px" }, "Pop quiz! +5 XP per right answer"));
+    qs.forEach((item, i) => {
+      const expl = el("p", { hidden: true, style: "margin:0" });
+      const card = el("div", { class: "qcard" }, el("b", {}, `${i + 1}. ${item.q}`));
+      const btns = item.choices.map((c, ci) => el("button", { class: "choice", onclick: ev => {
+        btns.forEach(x => x.disabled = true);
+        const right = ci === Number(item.answer);
+        ev.currentTarget.classList.add(right ? "right" : "wrong"); btns[Number(item.answer)]?.classList.add("right");
+        expl.textContent = (right ? "Correct! " : "Not quite. ") + (item.why || ""); expl.hidden = false;
+        if (right) { S.quizRight++; gainXP(5, ev.currentTarget); } else beep(SFX.tick);
+      } }, String(c)));
+      card.append(...btns, expl); box.append(card);
+    });
+  } catch (e) { box.replaceChildren(el("p", { class: "muted" }, aiErr(e))); }
+  finally { btn.disabled = false; }
+}
+
+/* ---------- Guided solve ---------- */
+const SOLVED = "[SOLVED]";
+const clean = t => t.split(SOLVED).join("").trim();
+let gctl = null, guiding = false, guideImgFor = null;
+document.querySelectorAll(".lang button").forEach(b => b.onclick = () => { S.helpLang = b.dataset.lang; save(); renderGuide(); });
+function guideTarget() {
+  const q = findQ(S.guide?.qid); const s = q?.steps.find(x => x.id === S.guide.sid);
+  return q && s ? [q, s] : [null, null];
+}
+function guideRules(q, s) {
+  return `${tutorRules()}
+Right now you are guiding ${S.name} through ONE homework question, like a patient teacher sitting beside them.
+- NEVER give the final answer to this question, even if they ask or beg. Guide with small steps and questions so they work it out themselves.
+- Each reply: at most about 80 words. Cover ONE small step, then end with one clear thing for them to try or answer.
+- In your first reply: say in simple words what the question is asking, what information it gives, and the very first small step.
+- When they send working or an answer, check it carefully. If it is correct and complete, praise them for exactly what they did well and put ${SOLVED} alone on the last line. If it is wrong or incomplete, say what they got right, show kindly where it went off, and give a nudge. Only write ${SOLVED} when their own answer is correct.
+- If they ask for a hint, give only the next smallest hint.
+- If they ask for a similar example, fully solve a SIMILAR problem (different numbers or a different example) step by step, then ask them to do theirs the same way.
+- For writing tasks, help them plan and improve their own sentences. Do not write it for them.
+${q.notes ? "\nThe full assignment, for context:\n" + q.notes.slice(0, 3000) + "\n" : ""}
+THE QUESTION THEY ARE WORKING ON NOW:
+${s.intro ? "(Instruction: " + s.intro + ")\n" : ""}${s.text}${s.fromBook ? "\n(An image of this part of their book is attached; use it for any figure, table or formatting.)" : ""}`;
+}
+function openGuide(qid, sid) {
+  S.guide = { qid, sid }; navQ = qid; buddyQ = qid; save();
+  showTab("buddy");
+  const [, s] = guideTarget();
+  if (s && !s.chat.length) guideSend("Let's start this question. What is it asking me to do, and what's the first small step?", "Let's start!");
+  else $("#guideInput").focus();
+}
+function renderGuide() {
+  const nav = $("#navQuest");
+  if (!findQ(navQ)) navQ = S.quests[0]?.id;
+  nav.replaceChildren(...S.quests.map(q => el("option", { value: q.id }, q.title)));
+  nav.value = navQ || "";
+  const nq = findQ(navQ);
+  $("#qNav").replaceChildren(...(nq ? nq.steps.map((s, i) => el("li", {}, el("button", {
+    class: s.done ? "done" : "", "aria-current": S.guide?.sid === s.id ? "true" : "false", onclick: () => openGuide(nq.id, s.id)
+  }, el("span", { class: "n" }, s.done ? "✓" : `Q${i + 1}`), el("span", { class: "t" }, s.text)))) : [el("li", { class: "muted" }, "No quests yet.")]));
+
+  const [q, s] = guideTarget();
+  $("#guideEmpty").hidden = !!s; $("#guideBody").hidden = !s;
+  if (!s) { $("#guideWhere").textContent = ""; return; }
+  const idx = q.steps.indexOf(s);
+  $("#guideWhere").textContent = `${q.title} · Question ${idx + 1} of ${q.steps.length}`;
+  $("#guideQ").textContent = (s.intro ? s.intro + "\n" : "") + s.text;
+  if (guideImgFor !== s.id) {
+    guideImgFor = s.id; const img = $("#guideImg"); img.hidden = true;
+    if (img.src) URL.revokeObjectURL(img.src), img.removeAttribute("src");
+    if (s.fromBook) fget("crop:" + s.id).then(bl => { if (bl && guideImgFor === s.id) { img.src = URL.createObjectURL(bl); img.hidden = false; } });
+  }
+  document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === S.helpLang));
+  if (!guiding) {
+    $("#guideChat").replaceChildren(...s.chat.map(t => t.role === "user"
+      ? el("div", { class: "bubble-me" }, t.show || t.content)
+      : Object.assign(el("div", { class: "answer" }), { innerHTML: md(clean(t.content)) })));
+  }
+  $("#solvedBanner").hidden = !(s.solved && !s.done);
+  $("#markDoneGuide").hidden = s.done;
+  $("#nextQ").hidden = !q.steps.some(x => !x.done && x !== s);
+  document.querySelectorAll("#guideForm button").forEach(b => { if (b.id !== "stopGuide") b.disabled = guiding || !sample; });
+}
+$("#navQuest").onchange = e => { navQ = e.target.value; renderGuide(); };
+
+async function guideSend(content, show, restore) {
+  await aiReady;
+  const [q, s] = guideTarget();
+  if (!s) return;
+  if (!sample) { $("#aiNotice").hidden = false; return; }
+  s.chat.push({ role: "user", content, show }); save();
+  renderGuide();
+  guiding = true; renderGuide();
+  const bubble = el("div", { class: "answer" }, el("p", { class: "muted" }, "Buddy is thinking…"));
+  $("#guideChat").append(bubble); bubble.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+  gctl = new AbortController(); $("#stopGuide").hidden = false;
+  const msgs = [{ role: "user", content: guideRules(q, s) }, ...s.chat.slice(-16).map(({ role, content }) => ({ role, content }))];
+  try {
+    const crop = s.fromBook && imgOK ? await fget("crop:" + s.id) : null;
+    const { text } = await sample(msgs, { cache: false, signal: gctl.signal, onText: ({ text }) => bubble.innerHTML = md(clean(text)), ...(crop ? { images: crop } : {}) });
+    s.chat.push({ role: "assistant", content: text });
+    if (text.includes(SOLVED) && !s.solved) { s.solved = true; beep(SFX.clear); confetti(90); }
+  } catch (e) {
+    if (e?.code === "cancelled" && e.text) s.chat.push({ role: "assistant", content: e.text });
+    else {
+      s.chat.pop();
+      if (restore) $("#guideInput").value = restore;
+      if (e?.code !== "cancelled") toast(aiErr(e));
+    }
+  } finally {
+    if (s.chat.length > 30) s.chat.splice(0, s.chat.length - 30);
+    guiding = false; $("#stopGuide").hidden = true; save(); renderGuide();
+  }
+}
+$("#stopGuide").onclick = () => gctl?.abort();
+$("#guideForm").addEventListener("submit", e => {
+  e.preventDefault(); if (guiding) return;
+  const t = $("#guideInput").value.trim();
+  if (!t) { toast("Type your working or answer first. Even a guess is OK!"); $("#guideInput").focus(); return; }
+  $("#guideInput").value = "";
+  guideSend("Here is my work or answer:\n" + t, t, t);
+});
+$("#guideInput").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#guideForm").requestSubmit(); } });
+const G_ASKS = {
+  hint: ["I'm stuck. Give me a hint for the next small step.", "I'm stuck, hint please"],
+  meaning: ["I don't understand what this question means. Explain it in simpler words.", "What does it mean?"],
+  example: ["Show me a similar example solved step by step, so I can see how to do mine.", "Show a similar example"]
+};
+document.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { if (!guiding) guideSend(...G_ASKS[b.dataset.g]); });
+function finishGuided(btn) {
+  const [q, s] = guideTarget(); if (!s || s.done) return;
+  toggleStep(q, s, btn);
+  const next = q.steps.find(x => !x.done);
+  if (next) { toast("Nice! On to the next question."); setTimeout(() => openGuide(q.id, next.id), 700); }
+  renderGuide();
+}
+$("#claimBtn").onclick = e => finishGuided(e.currentTarget);
+$("#markDoneGuide").onclick = e => finishGuided(e.currentTarget);
+$("#nextQ").onclick = () => { const [q, s] = guideTarget(); const i = q.steps.indexOf(s); const next = [...q.steps.slice(i + 1), ...q.steps.slice(0, i)].find(x => !x.done); if (next) openGuide(q.id, next.id); };
+$("#restartGuide").onclick = () => { const [, s] = guideTarget(); if (!s || guiding) return; s.chat = []; s.solved = false; save(); openGuide(S.guide.qid, s.id); };
+
+/* ---------- Focus mode ---------- */
+let mins = 15, endAt = null, remain = 15 * 60, tick = null;
+const BREAKS = ["Stand up and do 10 jumping jacks.", "Drink a glass of water.", "Breathe in for 4, hold for 4, out for 4. Do it 5 times.", "Look out a window at something far away for 20 seconds.", "Stretch your arms up high, then touch your toes.", "Put on one song you like and move around."];
+function currentStep() { const q = findQ(S.active); return q ? [q, q.steps.find(s => !s.done)] : [null, null]; }
+function fmt(s) { s = Math.max(0, Math.ceil(s)); return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; }
+function drawClock() {
+  $("#clock").textContent = fmt(remain);
+  $("#ring").style.strokeDashoffset = 326.7 * (1 - remain / (mins * 60));
+}
+function renderFocus() {
+  const [q, s] = currentStep();
+  $("#focusQuestName").textContent = q ? q.title : "No quest selected";
+  $("#focusStep").textContent = !q ? "Pick a quest on the Quest Board and press Focus." : s ? s.text : q.steps.length ? "Every step is done. Quest cleared!" : "This quest has no questions yet. Add them on the Quest Board.";
+  $("#stepDoneBtn").disabled = !s;
+  $("#focusGuideBtn").disabled = !s;
+  document.querySelectorAll("#presets button").forEach(b => b.setAttribute("aria-pressed", Number(b.dataset.min) === mins));
+  renderParked(); drawClock();
+}
+document.querySelectorAll("#presets button").forEach(b => b.onclick = () => { if (tick) return; mins = Number(b.dataset.min); remain = mins * 60; renderFocus(); });
+function runTimer(onDone, label) {
+  endAt = Date.now() + remain * 1000; $("#clockLbl").textContent = label; $("#startBtn").textContent = "Pause";
+  clearInterval(tick); tick = setInterval(() => {
+    remain = (endAt - Date.now()) / 1000; drawClock();
+    if (remain <= 0) { clearInterval(tick); tick = null; remain = 0; drawClock(); onDone(); }
+  }, 250);
+}
+function focusDone() {
+  $("#startBtn").textContent = "Start"; $("#clockLbl").textContent = "Done!";
+  S.focusRuns++; confetti(100); gainXP(25, $("#clock"));
+  $("#breakIdea").textContent = BREAKS[Math.floor(Math.random() * BREAKS.length)]; $("#breakCard").hidden = false;
+}
+$("#startBtn").onclick = () => {
+  if (tick) { clearInterval(tick); tick = null; $("#startBtn").textContent = "Resume"; $("#clockLbl").textContent = "Paused"; return; }
+  if (remain <= 0) remain = mins * 60;
+  $("#breakCard").hidden = true; beep(SFX.tick); runTimer(focusDone, "Focusing");
+};
+$("#resetBtn").onclick = () => { clearInterval(tick); tick = null; remain = mins * 60; $("#startBtn").textContent = "Start"; $("#clockLbl").textContent = "Ready"; drawClock(); };
+$("#focusGuideBtn").onclick = () => { const [q, s] = currentStep(); if (s) openGuide(q.id, s.id); };
+$("#stepDoneBtn").onclick = e => { const [q, s] = currentStep(); if (!s) return; toggleStep(q, s, e.currentTarget); renderFocus(); };
+$("#breakBtn").onclick = () => { $("#breakCard").hidden = true; remain = 180; const m = mins; mins = 3; runTimer(() => { mins = m; remain = m * 60; $("#startBtn").textContent = "Start"; $("#clockLbl").textContent = "Break over!"; beep(SFX.clear); toast("Break's over. Ready for the next step?"); drawClock(); }, "Break"); };
+$("#skipBreakBtn").onclick = () => { $("#breakCard").hidden = true; remain = mins * 60; $("#clockLbl").textContent = "Ready"; drawClock(); };
+function renderParked() {
+  $("#parkList").replaceChildren(...S.parked.map(p => el("li", {}, el("span", {}, p.text), el("button", { class: "x", "aria-label": "Remove", onclick: () => { S.parked = S.parked.filter(x => x !== p); save(); renderParked(); } }, "✕"))));
+}
+$("#parkForm").addEventListener("submit", e => { e.preventDefault(); const t = $("#parkInput").value.trim(); if (!t) return; S.parked.push({ id: uid(), text: t }); $("#parkInput").value = ""; save(); renderParked(); toast("Parked. Back to your step!"); });
+
+/* ---------- Trophies ---------- */
+function renderTrophies() {
+  $("#badgeGrid").replaceChildren(...BADGES.map(([id, name, desc]) => el("div", { class: "badge" + (S.badges.includes(id) ? " got" : "") }, el("div", { class: "gem" }), el("b", {}, name), el("span", { class: "muted", style: "font-size:14px" }, desc))));
+  $("#trophyCount").textContent = `${S.badges.length} of ${BADGES.length} unlocked`;
+  const stat = (n, l) => el("div", {}, el("div", { style: "font:32px var(--display)" }, String(n)), el("div", { class: "px muted" }, l));
+  $("#statRow").replaceChildren(stat(S.xp, "Total XP"), stat(S.stepsDone, "Steps done"), stat(S.questsDone, "Quests cleared"), stat(S.focusRuns, "Focus runs"), stat(S.quizRight, "Quiz answers right"));
+}
+$("#resetAll").onclick = () => $("#resetConfirm").hidden = false;
+$("#resetNo").onclick = () => $("#resetConfirm").hidden = true;
+$("#resetYes").onclick = () => { S = fresh(); save(); $("#heroName").value = S.name; $("#resetConfirm").hidden = true; renderAll(); toast("Fresh start! New adventure begins."); };
+
+/* ---------- file storage (IndexedDB, this device only) ---------- */
+const mem = new Map();
+let dbp = null;
+function idb() {
+  if (!dbp) dbp = new Promise((res, rej) => {
+    try { const r = indexedDB.open("homework-quest", 1); r.onupgradeneeded = () => r.result.createObjectStore("files"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }
+    catch (e) { rej(e); }
+  }).catch(() => null);
+  return dbp;
+}
+async function fput(k, v) {
+  mem.set(k, v); const d = await idb(); if (!d) return false;
+  return new Promise(res => { try { const t = d.transaction("files", "readwrite"); t.objectStore("files").put(v, k); t.oncomplete = () => res(true); t.onerror = t.onabort = () => res(false); } catch { res(false); } });
+}
+async function fget(k) {
+  if (mem.has(k)) return mem.get(k);
+  const d = await idb(); if (!d) return undefined;
+  return new Promise(res => { try { const r = d.transaction("files").objectStore("files").get(k); r.onsuccess = () => { if (r.result !== undefined) mem.set(k, r.result); res(r.result); }; r.onerror = () => res(undefined); } catch { res(undefined); } });
+}
+async function fdel(k) {
+  mem.delete(k); const d = await idb(); if (!d) return;
+  try { d.transaction("files", "readwrite").objectStore("files").delete(k); } catch {}
+}
+
+/* ---------- pdf.js ---------- */
+async function getPdfjs() {
+  for (let i = 0; i < 75 && !window.pdfjsLib; i++) await new Promise(r => setTimeout(r, 200));
+  if (!window.pdfjsLib) throw new Error("pdf reader did not load");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  return pdfjsLib;
+}
+async function openPdf(blob) {
+  const lib = await getPdfjs();
+  return lib.getDocument({ data: new Uint8Array(await blob.arrayBuffer()), isEvalSupported: false }).promise;
+}
+
+/* ---------- built-in sample page ---------- */
+let sampleCache = null;
+function samplePage() {
+  if (sampleCache) return sampleCache;
+  const W = 1000, H = 1250, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const g = c.getContext("2d"), items = [];
+  g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
+  const put = (str, x, y, size, color = "#1d1d1d", weight = "") => {
+    g.font = `${weight} ${size}px Georgia, "Times New Roman", serif`; g.fillStyle = color; g.fillText(str, x, y);
+    items.push({ str, x: x / W, y: (y - size) / H, w: g.measureText(str).width / W, h: size * 1.2 / H });
+  };
+  g.fillStyle = "#3b5ba9"; g.fillRect(0, 0, W, 90);
+  put("ΚΕΦΑΛΑΙΟ 3 · Κλάσματα", 60, 58, 34, "#fff", "bold");
+  put("Θυμόμαστε", 60, 160, 28, "#3b5ba9", "bold");
+  put("Για να προσθέσουμε κλάσματα με διαφορετικούς παρονομαστές,", 60, 205, 24);
+  put("τα μετατρέπουμε πρώτα σε ομώνυμα (με το ΕΚΠ των παρονομαστών).", 60, 240, 24);
+  g.strokeStyle = "#3b5ba9"; g.lineWidth = 2; g.strokeRect(40, 120, 920, 145);
+  put("ΑΣΚΗΣΕΙΣ", 60, 340, 30, "#c0392b", "bold");
+  const ex = [
+    ["1. Να απλοποιήσετε τα κλάσματα:   α) 12/18     β) 20/35"],
+    ["2. Να βρείτε το ΕΚΠ των αριθμών 4, 6 και 9."],
+    ["3. Να υπολογίσετε:   3/4 + 5/6"],
+    ["4. Ένα οικόπεδο έχει εμβαδόν 600 m². Τα 2/5 του οικοπέδου", "    είναι κήπος. Πόσα m² είναι ο κήπος;"],
+    ["5. Ο Γιάννης διάβασε τα 3/8 ενός βιβλίου 240 σελίδων.", "    Πόσες σελίδες του μένουν ακόμη να διαβάσει;"],
+    ["6. Να συγκρίνετε τα κλάσματα 5/7 και 7/10."],
+  ];
+  let y = 400;
+  for (const lines of ex) { for (const l of lines) { put(l, 60, y, 26); y += 40; } y += 34; }
+  put("Σελίδα 45", 470, H - 40, 20, "#777");
+  return sampleCache = { canvas: c, items };
+}
+
+/* ---------- shelf ---------- */
+const COVER = ["#6c3fd1", "#c2456b", "#1f8a70", "#2d6cdf", "#b86b12", "#7b2cbf", "#0f7c8c", "#9c3d10"];
+const coverOf = b => COVER[[...b.subject].reduce((a, ch) => a + ch.charCodeAt(0), 0) % COVER.length];
+const hlDone = h => { const q = findQ(h.qid); return !!q && h.stepIds.every(id => q.steps.find(x => x.id === id)?.done ?? true); };
+let delArm = null;
+function renderShelf() {
+  $("#shelfList").replaceChildren(...S.books.map(b => {
+    const solved = b.hl.filter(hlDone).length;
+    return el("article", { class: "book" },
+      el("button", { class: "cover", style: `background:linear-gradient(160deg, ${coverOf(b)}, #1b1030)`, onclick: () => openBook(b.id), "aria-label": "Open " + b.title },
+        el("span", { class: "px", style: "opacity:.8;font-size:10px" }, b.subject), el("b", {}, b.title)),
+      el("div", { class: "meta" },
+        el("div", { class: "row" },
+          el("span", { class: "muted", style: "font-size:14px" }, `${b.pages} page${b.pages === 1 ? "" : "s"} · ${b.hl.length} highlighted · ${solved} solved`),
+          b.type === "sample" ? el("span", { class: "chip ex" }, "Example") : null),
+        el("div", { class: "row" },
+          el("button", { class: "btn", onclick: () => openBook(b.id) }, b.lastPage > 1 ? `Continue p. ${b.lastPage}` : "Open"),
+          el("button", { class: "btn ghost", onclick: e => {
+            if (delArm !== b.id) { delArm = b.id; e.currentTarget.textContent = "Tap again to delete"; return; }
+            S.books = S.books.filter(x => x !== b); fdel("book:" + b.id); delArm = null; save(); renderShelf();
+          } }, "Delete"))));
+  }));
+}
+function bookTitleFrom(name) { return ($("#bookTitle").value.trim() || name.replace(/\.[a-z0-9]+$/i, "").replace(/[_-]+/g, " ")).slice(0, 60); }
+async function addBook(kind, files) {
+  const status = $("#bookStatus");
+  if (!files.length) return;
+  status.textContent = "Adding your book…";
+  try {
+    let pages, data;
+    if (kind === "pdf") {
+      const doc = await openPdf(files[0]); pages = doc.numPages; data = files[0]; doc.destroy?.();
+    } else {
+      data = [...files].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })); pages = data.length;
+    }
+    const b = { id: uid(), title: bookTitleFrom(files[0].name), subject: $("#bookSubject").value, type: kind, pages, lastPage: 1, hl: [] };
+    const kept = await fput("book:" + b.id, data);
+    S.books.unshift(b); save(); renderShelf();
+    $("#bookTitle").value = ""; status.textContent = "";
+    toast(kept ? `Added "${b.title}". Open it and highlight a question!` : `Added "${b.title}", but this browser won't keep it after you close the page.`);
+  } catch (e) {
+    status.textContent = kind === "pdf" ? "That PDF couldn't be opened. Check it's the book file and try again." : "Those photos couldn't be added. Try again.";
+  }
+}
+$("#bookFile").addEventListener("change", e => { addBook("pdf", [...e.target.files]); e.target.value = ""; });
+$("#bookPhotos").addEventListener("change", e => { addBook("images", [...e.target.files]); e.target.value = ""; });
+document.querySelectorAll('label[for="bookFile"],label[for="bookPhotos"]').forEach(l => l.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#" + l.htmlFor).click(); } }));
+
+/* ---------- screenshots (paste / drop) ---------- */
+async function addScreenshots(blobs) {
+  blobs = blobs.filter(b => b && /^image\//.test(b.type)); if (!blobs.length) return false;
+  const st = $("#pasteStatus"); st.textContent = "Adding your screenshot…";
+  let b = R.book && R.book.type === "images" && !$("#reader").hidden ? R.book : S.books.find(x => x.type === "images" && x.screens);
+  let pages = b ? (await fget("book:" + b.id)) || [] : [];
+  if (!b) { b = { id: uid(), title: "My screenshots", subject: $("#bookSubject").value, type: "images", screens: true, pages: 0, lastPage: 1, hl: [] }; S.books.unshift(b); }
+  pages = [...pages, ...blobs];
+  const kept = await fput("book:" + b.id, pages);
+  b.pages = pages.length; b.lastPage = pages.length; save(); st.textContent = "";
+  if (!kept) toast("Added, but this browser won't keep it after you close the page.");
+  showTab("books");
+  if (R.book?.id === b.id && !$("#reader").hidden) { R.imgs = pages; goPage(b.pages); }
+  else await openBook(b.id);
+  toast(sample && !imgOK ? "Screenshot added, but Study Buddy can't read pictures here. Try in the Claude app or claude.ai." : "Screenshot added! Now drag over the question.");
+  return true;
+}
+document.addEventListener("paste", e => {
+  const t = e.target;
+  const imgs = [...(e.clipboardData?.files || [])].filter(f => f.type.startsWith("image/"));
+  if (!imgs.length) {
+    if (t === $("#pasteTarget") || t === $("#pasteZone")) { e.preventDefault(); $("#pasteStatus").textContent = "There's no picture on the clipboard yet. Take the screenshot with Control + Shift + ⌘ + 4 first."; }
+    return;
+  }
+  if ((t.tagName === "TEXTAREA" || t.tagName === "INPUT") && t.type !== "file") { if (t.id !== "qNotes") return; }
+  e.preventDefault(); addScreenshots(imgs);
+});
+$("#pasteTarget").onclick = () => $("#pasteZone").focus();
+const pz = $("#pasteZone");
+pz.addEventListener("dragover", e => { e.preventDefault(); pz.classList.add("over"); });
+pz.addEventListener("dragleave", () => pz.classList.remove("over"));
+pz.addEventListener("drop", e => { e.preventDefault(); pz.classList.remove("over"); addScreenshots([...(e.dataTransfer?.files || [])]); });
+
+/* ---------- reader ---------- */
+const R = { book: null, pdf: null, imgs: null, page: 1, items: [], token: 0, drawing: true, pending: null, width: 0 };
+const cvs = $("#pageCanvas"), layer = $("#hlLayer");
+async function openBook(id) {
+  const b = S.books.find(x => x.id === id); if (!b) return;
+  R.book = b; R.pdf = null; R.imgs = null;
+  $("#shelf").hidden = true; $("#reader").hidden = false; $("#readerTitle").textContent = b.title;
+  $("#readerPasteHint").hidden = b.type !== "images";
+  $("#pageLoading").hidden = false; cvs.width = 0;
+  try {
+    if (b.type !== "sample") {
+      const data = await fget("book:" + b.id);
+      if (!data) { toast("This book isn't saved on this device any more. Please add it again."); return closeBook(); }
+      if (b.type === "pdf") R.pdf = await openPdf(data); else R.imgs = data;
+    }
+  } catch { toast("This book couldn't be opened. Try adding it again."); return closeBook(); }
+  goPage(b.lastPage || 1);
+}
+function closeBook() { R.book = null; R.pdf?.destroy?.(); R.pdf = null; clearPending(); $("#reader").hidden = true; $("#shelf").hidden = false; renderShelf(); }
+$("#shelfBack").onclick = closeBook;
+function goPage(n) {
+  const b = R.book; if (!b) return;
+  R.page = Math.max(1, Math.min(b.pages, Number(n) || 1)); b.lastPage = R.page; save();
+  $("#pgNum").value = R.page; $("#pgNum").max = b.pages; $("#pgTotal").textContent = b.pages;
+  for (const id of ["#pgPrev", "#pgPrev2"]) $(id).disabled = R.page <= 1;
+  for (const id of ["#pgNext", "#pgNext2"]) $(id).disabled = R.page >= b.pages;
+  clearPending(); renderPage();
+}
+["#pgPrev", "#pgPrev2"].forEach(id => $(id).onclick = () => { goPage(R.page - 1); if (id.endsWith("2")) $("#reader").scrollIntoView({ block: "start" }); });
+["#pgNext", "#pgNext2"].forEach(id => $(id).onclick = () => { goPage(R.page + 1); if (id.endsWith("2")) $("#reader").scrollIntoView({ block: "start" }); });
+$("#pgNum").addEventListener("change", e => goPage(e.target.value));
+
+async function renderPage() {
+  const b = R.book, tok = ++R.token, wrap = $("#pageWrap");
+  const cssW = wrap.clientWidth || 800, dpr = Math.min(2, window.devicePixelRatio || 1);
+  R.width = cssW;
+  $("#pageLoading").hidden = false;
+  try {
+    if (b.type === "sample") {
+      const sp = samplePage(); cvs.width = sp.canvas.width; cvs.height = sp.canvas.height;
+      cvs.getContext("2d").drawImage(sp.canvas, 0, 0); R.items = sp.items;
+    } else if (R.pdf) {
+      const page = await R.pdf.getPage(R.page); if (tok !== R.token) return;
+      const vp = page.getViewport({ scale: cssW * dpr / page.getViewport({ scale: 1 }).width });
+      const off = document.createElement("canvas"); off.width = Math.floor(vp.width); off.height = Math.floor(vp.height);
+      await page.render({ canvasContext: off.getContext("2d"), viewport: vp }).promise;
+      if (tok !== R.token) return;
+      cvs.width = off.width; cvs.height = off.height; cvs.getContext("2d").drawImage(off, 0, 0);
+      const tc = await page.getTextContent(); if (tok !== R.token) return;
+      R.items = tc.items.filter(it => it.str && it.str.trim()).map(it => {
+        const [x, y] = vp.convertToViewportPoint(it.transform[4], it.transform[5]);
+        const h = Math.hypot(it.transform[2], it.transform[3]) * vp.scale, w = it.width * vp.scale;
+        return { str: it.str, x: x / vp.width, y: (y - h) / vp.height, w: w / vp.width, h: h / vp.height };
+      });
+    } else if (R.imgs) {
+      const blob = R.imgs[R.page - 1];
+      const bmp = await createImageBitmap(blob, { imageOrientation: "from-image" }).catch(() => createImageBitmap(blob));
+      if (tok !== R.token) return;
+      const sc = Math.min(1, 2200 / bmp.width);
+      cvs.width = Math.round(bmp.width * sc); cvs.height = Math.round(bmp.height * sc);
+      cvs.getContext("2d").drawImage(bmp, 0, 0, cvs.width, cvs.height); R.items = [];
+    }
+  } catch { if (tok === R.token) toast("This page couldn't be shown. Try the next one."); }
+  if (tok === R.token) { $("#pageLoading").hidden = true; drawHighlights(); }
+}
+let rsz; addEventListener("resize", () => { clearTimeout(rsz); rsz = setTimeout(() => { if (R.book && !$("#reader").hidden && Math.abs($("#pageWrap").clientWidth - R.width) > 40) renderPage(); }, 300); });
+
+function place(div, r) { Object.assign(div.style, { left: r.x * 100 + "%", top: r.y * 100 + "%", width: r.w * 100 + "%", height: r.h * 100 + "%" }); }
+function drawHighlights() {
+  layer.querySelectorAll(".hl.saved").forEach(n => n.remove());
+  const b = R.book; if (!b) return;
+  for (const h of b.hl.filter(h => h.page === R.page)) {
+    const q = findQ(h.qid), done = hlDone(h);
+    const nums = h.stepIds.map(id => q ? q.steps.findIndex(s => s.id === id) + 1 : 0).filter(Boolean);
+    const d = el("div", { class: "hl saved" + (done ? " solved" : ""), role: "button", tabindex: 0, "aria-label": done ? "Solved highlight" : "Open this highlighted question" },
+      el("span", { class: "tag" }, done ? "✓ solved" : nums.length > 1 ? `Q${nums[0]}–${nums.at(-1)}` : `Q${nums[0] || "?"}`));
+    place(d, h);
+    const open = e => { e.stopPropagation(); e.preventDefault(); openHighlight(h); };
+    d.addEventListener("pointerdown", e => e.stopPropagation());
+    d.addEventListener("click", open); d.addEventListener("keydown", e => { if (e.key === "Enter") open(e); });
+    layer.append(d);
+  }
+}
+function openHighlight(h) {
+  const q = findQ(h.qid); if (!q) { toast("This question was deleted from your quests."); return; }
+  const next = h.stepIds.map(id => q.steps.find(s => s.id === id)).find(s => s && !s.done);
+  if (next) openGuide(q.id, next.id); else toast("Already solved! ✓ Pick another question.");
+}
+
+/* drawing a highlight */
+let drag = null;
+const clamp01 = v => Math.max(0, Math.min(1, v));
+function fracPt(e) { const r = cvs.getBoundingClientRect(); return { x: clamp01((e.clientX - r.left) / r.width), y: clamp01((e.clientY - r.top) / r.height) }; }
+function clearPending() { R.pending?.el.remove(); R.pending = null; $("#hlPop").hidden = true; }
+layer.addEventListener("pointerdown", e => {
+  if (!R.drawing || e.button > 0 || !cvs.width) return;
+  clearPending(); layer.setPointerCapture(e.pointerId);
+  const p = fracPt(e); const d = el("div", { class: "hl" }); layer.append(d);
+  drag = { p, d }; place(d, { x: p.x, y: p.y, w: 0, h: 0 });
+});
+layer.addEventListener("pointermove", e => {
+  if (!drag) return; const q = fracPt(e);
+  drag.r = { x: Math.min(drag.p.x, q.x), y: Math.min(drag.p.y, q.y), w: Math.abs(q.x - drag.p.x), h: Math.abs(q.y - drag.p.y) };
+  place(drag.d, drag.r);
+});
+function endDrag() {
+  if (!drag) return; const { d, r } = drag; drag = null;
+  if (!r || r.w < 0.03 || r.h < 0.012) { d.remove(); return; }
+  R.pending = { el: d, r };
+  const pop = $("#hlPop"); pop.hidden = false;
+  const below = r.y + r.h < 0.82;
+  Object.assign(pop.style, { left: Math.min(r.x, 0.55) * 100 + "%", top: (below ? r.y + r.h : r.y) * 100 + "%", transform: below ? "translateY(8px)" : "translateY(calc(-100% - 8px))" });
+  $("#solveBtn").focus({ preventScroll: true });
+}
+layer.addEventListener("pointerup", endDrag);
+layer.addEventListener("pointercancel", () => { drag?.d.remove(); drag = null; });
+$("#hlCancel").onclick = clearPending;
+$("#hlToggle").onclick = () => {
+  R.drawing = !R.drawing; layer.classList.toggle("drawing", R.drawing); clearPending();
+  $("#hlToggle").textContent = R.drawing ? "Highlighter: ON" : "Highlighter: OFF (scroll)";
+  $("#hlToggle").setAttribute("aria-pressed", R.drawing);
+  $("#readerHint").textContent = R.drawing ? "Drag your finger or mouse across a question to highlight it. You can include several questions in one highlight." : "Highlighter is off, so you can scroll. Tap a highlight to keep working on it.";
+};
+
+function textIn(r, items) {
+  const pad = 0.004;
+  const inside = items.filter(it => { const cx = it.x + it.w / 2, cy = it.y + it.h / 2; return cx >= r.x - pad && cx <= r.x + r.w + pad && cy >= r.y - pad && cy <= r.y + r.h + pad; });
+  return linesOf(inside);
+}
+function linesOf(items) {
+  const sorted = [...items].sort((a, b) => a.y - b.y || a.x - b.x); const lines = [];
+  for (const it of sorted) {
+    const last = lines.at(-1);
+    if (last && Math.abs(last.y - it.y) < it.h * 0.5) last.parts.push(it); else lines.push({ y: it.y, parts: [it] });
+  }
+  return lines.map(l => l.parts.sort((a, b) => a.x - b.x).map(p => p.str).join(" ").replace(/\s+/g, " ").trim()).filter(Boolean).join("\n");
+}
+function cropOf(r) {
+  const pad = 0.012, sx = Math.max(0, (r.x - pad)) * cvs.width, sy = Math.max(0, (r.y - pad)) * cvs.height;
+  const sw = Math.min(cvs.width - sx, (r.w + 2 * pad) * cvs.width), sh = Math.min(cvs.height - sy, (r.h + 2 * pad) * cvs.height);
+  const sc = Math.min(1, 1400 / sw), c = document.createElement("canvas");
+  c.width = Math.max(1, Math.round(sw * sc)); c.height = Math.max(1, Math.round(sh * sc));
+  const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
+  g.drawImage(cvs, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  return new Promise(res => c.toBlob(res, "image/jpeg", 0.9));
+}
+
+$("#solveBtn").onclick = async () => {
+  const b = R.book, pend = R.pending; if (!b || !pend) return;
+  const btn = $("#solveBtn"); btn.disabled = true; btn.textContent = "Reading your highlight…";
+  const r = pend.r, text = textIn(r, R.items), pageText = linesOf(R.items).slice(0, 2500);
+  const crop = await cropOf(r).catch(() => null);
+  await aiReady;
+  let parsed = null;
+  try {
+    if (sample && (text || (imgOK && crop))) {
+      parsed = await sample.json(`A student in ${gradeDesc()} highlighted part of a page in their school book "${b.title}" (${b.subject}), page ${R.page}. The book is in Greek.
+${imgOK && crop ? "The attached image shows exactly the part they highlighted.\n" : ""}${text ? "Text inside the highlight:\n" + text + "\n" : ""}${pageText ? "\nThe rest of the page, only for context (an exercise heading or instruction like «Να υπολογίσετε» may be here):\n" + pageText + "\n" : ""}
+List every separate question or exercise inside the highlight, exactly as written (in Greek), keeping its number or letter. If an exercise has parts (α, β, γ) that are answered separately, make each part its own question and put the exercise number in front (e.g. "1α) 12/18"). If they need an instruction that is outside the highlight, put it in "instructions". If a question needs a figure or table, add a short description of it in square brackets. Do not answer anything.
+Reply with only JSON like {"instructions":"Να απλοποιήσετε τα κλάσματα:","questions":["1α) 12/18","1β) 20/35"]}`, imgOK && crop ? { images: crop } : {});
+    }
+  } catch (e) { if (!text) { toast(aiErr(e)); btn.disabled = false; btn.textContent = "Solve this with Buddy"; return; } }
+  let questions = Array.isArray(parsed?.questions) ? parsed.questions.map(x => String(typeof x === "object" ? x?.text ?? "" : x).trim()).filter(Boolean) : null;
+  if (!questions?.length) questions = text ? splitLocally(text) : null;
+  btn.disabled = false; btn.textContent = "Solve this with Buddy";
+  if (!questions?.length) {
+    toast(sample ? "Buddy couldn't read that part. Try a slightly bigger highlight." : "Study Buddy needs to be switched on to read photos of pages.");
+    return;
+  }
+  const instr = String(parsed?.instructions || "").trim().slice(0, 300);
+  let q = S.quests.find(x => x.bookId === b.id && x.page === R.page);
+  if (!q) { q = { id: uid(), title: `${b.title} · p. ${R.page}`, subject: b.subject, due: "", notes: "", steps: [], bookId: b.id, page: R.page }; S.quests.unshift(q); }
+  const steps = questions.slice(0, 20).map(t => ({ id: uid(), text: t.slice(0, 600), min: 10, done: false, chat: [], intro: instr, fromBook: !!crop }));
+  q.steps.push(...steps); q.cleared = false;
+  q.notes = (q.notes + "\n" + (instr ? instr + "\n" : "") + questions.join("\n")).trim().slice(-6000);
+  if (crop) for (const s of steps) await fput("crop:" + s.id, crop);
+  b.hl.push({ id: uid(), page: R.page, x: r.x, y: r.y, w: r.w, h: r.h, qid: q.id, stepIds: steps.map(s => s.id) });
+  S.active = q.id; save(); clearPending(); drawHighlights(); renderQuests();
+  toast(steps.length > 1 ? `Found ${steps.length} questions. Let's do them one by one!` : "Got it! Let's solve it together.");
+  openGuide(q.id, steps[0].id);
+};
+
+/* ---------- boot ---------- */
+function renderAll() { renderHUD(); renderShelf(); renderQuests(); renderBuddy(); renderFocus(); renderTrophies(); }
+renderAll();
+let startTab = "books"; try { startTab = sessionStorage.getItem(KEY + "-tab") || "books"; } catch {}
+showTab(startTab);
+})();
+</script>
+</body>
+</html>
