@@ -287,6 +287,14 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
 .stop b{font:20px var(--display);color:var(--gold);font-variant-numeric:tabular-nums}
 .stop small{color:var(--muted);font-size:13px}
 @media (max-width:520px){.vs{font-size:24px}}
+/* Translate + learn */
+.btn.small{padding:6px 12px;font-size:14px;box-shadow:none}
+.trans{border-left:4px solid var(--mint)}
+.trans-wrap{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.trans-wrap .answer{align-self:stretch}
+.bubble-wrap{display:flex;flex-direction:column;gap:6px}
+.bubble-wrap>.trans-wrap{margin-left:6px}
+.chip.learn{background:#123a2e;color:var(--mint);border-color:#1f6b52}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -388,11 +396,16 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
       </div>
       <p class="muted" id="readerPasteHint" style="margin:0;font-size:15px" hidden>Tip: press ⌘V any time to add another screenshot to this book.</p>
       <p class="hint" id="readerHint">Drag your finger or mouse across a question to highlight it. You can include several questions in one highlight.</p>
+      <div class="panel stack" id="pageTransBox" hidden>
+        <div class="row" style="justify-content:space-between"><b>Translation of your highlight</b><button class="btn ghost small" id="pageTransClose">Close</button></div>
+        <div class="answer trans" id="pageTrans"></div>
+      </div>
       <div class="page-wrap" id="pageWrap">
         <canvas id="pageCanvas"></canvas>
         <div class="hl-layer drawing" id="hlLayer"></div>
         <div class="hl-pop" id="hlPop" hidden>
-          <button class="btn gold" id="solveBtn">Solve this with Buddy</button>
+          <button class="btn gold" id="solveBtn">Help me with this</button>
+          <button class="btn" id="hlTrans">Translate</button>
           <button class="btn ghost" id="hlCancel">Cancel</button>
         </div>
         <div class="page-loading" id="pageLoading" hidden>Opening page…</div>
@@ -427,8 +440,10 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
           <label class="lbl"><span class="px muted">Due date</span>
             <input class="field" type="date" id="qDue"></label>
         </div>
+        <div class="answer trans" id="pasteTrans" hidden></div>
         <div class="row">
           <button class="btn gold" type="submit" id="addQuestBtn">Turn it into a quest +</button>
+          <button class="btn ghost" type="button" id="pasteTransBtn">Translate it</button>
           <span class="muted" id="addStatus" role="status"></span>
         </div>
       </form>
@@ -442,7 +457,7 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
       <div class="panel stack">
         <h3 style="font-size:20px">How to play</h3>
         <ol style="margin:0;padding-left:1.2em" class="muted">
-          <li>Paste your homework (or snap a photo). Buddy splits it into questions.</li>
+          <li>Paste your homework (or snap a photo). Buddy splits it into questions. If it's something to read and learn, Buddy teaches it to you.</li>
           <li>Press <b style="color:var(--text)">Guide me</b> on a question.</li>
           <li>Buddy explains what it's asking and gives you <b style="color:var(--text)">one small step</b> at a time. You do the work.</li>
           <li>Type your answer. Buddy checks it. Solve it to earn XP!</li>
@@ -517,23 +532,24 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
     <div class="stack">
     <div class="notice" id="aiNotice" hidden>Study Buddy runs on Claude. Open this page while signed in to Claude and allow it when asked. Everything else on the page works without it.</div>
     <div class="panel stack" id="guidePanel">
-      <div class="section-title" style="margin:0"><h2>Guided solve</h2><span class="px muted" id="guideWhere"></span></div>
-      <div class="row lang" role="group" aria-label="Help language"><span class="px muted">Help me in</span>
+      <div class="section-title" style="margin:0"><h2 id="guideHead">Guided solve</h2><span class="px muted" id="guideWhere"></span></div>
+      <div class="row lang" role="group" aria-label="Buddy's language"><span class="px muted">Buddy talks in</span>
         <button type="button" data-lang="English">English</button><button type="button" data-lang="Greek">Ελληνικά</button></div>
       <div id="guideEmpty" class="empty">Open a book in <b>My Books</b> and highlight a question, or pick one on the right. Buddy will walk you through it step by step.</div>
       <div id="guideBody" class="stack" hidden>
         <img id="guideImg" class="guide-img" alt="The part of the book you highlighted" hidden>
         <div class="qbox" id="guideQ"></div>
+        <div id="guideTrans"></div>
         <div class="chat" id="guideChat" aria-live="polite"></div>
         <div class="solved-banner" id="solvedBanner" hidden>
           <b>Buddy says you got it!</b>
           <button class="btn mint" id="claimBtn">Claim +10 XP</button>
         </div>
         <form class="stack" id="guideForm">
-          <label class="lbl"><span class="px muted">Your answer or what you tried</span>
+          <label class="lbl"><span class="px muted" id="guideInputLbl">Your answer or what you tried</span>
             <textarea class="field" id="guideInput" maxlength="1500" rows="2" placeholder="Type your working or your answer, then press Check my work"></textarea></label>
           <div class="row">
-            <button class="btn" type="submit">Check my work</button>
+            <button class="btn" type="submit" id="guideSubmit">Check my work</button>
             <button class="btn gold" type="button" data-g="hint">I'm stuck, hint please</button>
             <button class="btn ghost" type="button" data-g="meaning">What does it mean?</button>
             <button class="btn ghost" type="button" data-g="example">Show a similar example</button>
@@ -623,6 +639,7 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
       <div class="arena-card stack" id="arenaPlay" hidden>
         <span class="px muted" id="arenaProg"></span>
         <div class="qbox" id="arenaQ"></div>
+        <div id="arenaTrans"></div>
         <div class="stack" id="arenaAns"></div>
         <div class="notice" id="arenaHint" hidden></div>
         <div class="row"><button class="btn" id="arenaSubmit">Attack!</button></div>
@@ -683,6 +700,7 @@ kbd{font:13px var(--pixel);background:var(--panel-2);border:1px solid var(--line
         <div class="section-title" style="margin:0"><h2 id="testTitle">Practice test</h2><span class="px muted" id="testProg"></span></div>
         <div class="bar"><i id="testBar"></i></div>
         <div class="qbox" id="testQ"></div>
+        <div id="testTrans"></div>
         <div class="stack" id="testAnswer"></div>
         <div class="row">
           <button class="btn ghost" id="testBack">← Back</button>
@@ -989,8 +1007,8 @@ function renderQuests() {
       el("div", { class: "row", style: "gap:10px" }, el("div", { class: "bar", style: "flex:1" }, el("i", { style: `width:${pct}%` })), el("span", { class: "px muted" }, `${done}/${q.steps.length}`)),
       el("ul", { class: "steps" }, q.steps.map(s => el("li", { class: "step" + (s.done ? " done" : "") },
         el("button", { class: "check", "aria-label": (s.done ? "Undo: " : "Finish: ") + s.text, onclick: e => toggleStep(q, s, e.currentTarget) }, s.done ? "✓" : ""),
-        el("span", { class: "stxt" }, s.text),
-        s.done ? null : el("button", { class: "guide", onclick: () => openGuide(q.id, s.id) }, s.chat?.length ? "Continue" : "Guide me"),
+        el("span", { class: "stxt" }, s.kind === "learn" ? el("span", { class: "chip learn", style: "margin-right:6px" }, "Learn") : null, s.kind === "learn" && s.text.length > 220 ? s.text.slice(0, 220) + "…" : s.text),
+        s.done ? null : el("button", { class: "guide", onclick: () => openGuide(q.id, s.id) }, s.chat?.length ? "Continue" : s.kind === "learn" ? "Learn it" : "Guide me"),
         el("button", { class: "x", "aria-label": "Remove question", onclick: () => { q.steps = q.steps.filter(x => x !== s); save(); renderQuests(); } }, "✕")))),
       el("form", { class: "addstep", onsubmit: e => { e.preventDefault(); const t = stepInput.value.trim(); if (!t) return; q.steps.push({ id: uid(), text: t, min: 10, done: false, chat: [] }); q.cleared = false; save(); renderQuests(); } },
         stepInput, el("button", { class: "btn ghost", type: "submit" }, "Add")),
@@ -1002,6 +1020,18 @@ function renderQuests() {
   }
 }
 /* Split pasted text into numbered questions without AI */
+$("#pasteTransBtn").onclick = async () => {
+  const text = $("#qNotes").value.trim(), box = $("#pasteTrans"), btn = $("#pasteTransBtn");
+  if (!text) { toast("Type or paste something first."); $("#qNotes").focus(); return; }
+  box.hidden = false; box.innerHTML = "<p class='muted'>Translating…</p>"; btn.disabled = true;
+  try { const out = await translateText(text, null, t => box.innerHTML = md(t)); box.innerHTML = md(out); }
+  catch (e) { box.innerHTML = `<p class="muted">${esc(aiErr(e))}</p>`; }
+  finally { btn.disabled = false; }
+};
+$("#qNotes").addEventListener("input", () => { $("#pasteTrans").hidden = true; });
+function looksLikeLearn(text, parts) {
+  return parts.length <= 1 && !/[?;]\s*$/m.test(text) && text.length > 250;
+}
 function splitLocally(text) {
   const lines = text.split(/\r?\n/);
   const qs = []; let cur = null;
@@ -1026,8 +1056,9 @@ $("#newQuest").addEventListener("submit", async e => {
   await aiReady;
   if (sample) {
     try {
-      parsed = await sample.json(`A ${gradeDesc()} student pasted their homework assignment (usually in Greek)${photo ? " (the photo shows it)" : ""}. Split it into its separate questions or tasks, exactly as the teacher wrote them. Keep each question's number and full wording. If a question needs a shared passage, table or instruction to make sense, put that in "context" (keep it complete). Pick the subject from exactly one of: ${[...$("#qSubject").options].slice(1).map(o => o.value).join(", ")}.
-Reply with only JSON like {"title":"Κλάσματα σελ. 45","subject":"Mathematics (Μαθηματικά)","context":"","questions":["1. Να απλοποιήσετε το κλάσμα 15/25","2. Να βρείτε το ΕΚΠ των 6 και 8"]}
+      parsed = await sample.json(`A ${gradeDesc()} student pasted their homework assignment (usually in Greek)${photo ? " (the photo shows it)" : ""}. Split it into its separate questions or tasks, exactly as the teacher wrote them. Keep each question's number and full wording.
+If it is material to READ AND LEARN with nothing to answer (a passage, theory, a history or literature text, a poem, vocabulary, notes), set "kind":"learn" and put its parts in "questions": 1 to 6 sections, each a complete paragraph or section copied word for word. Otherwise set "kind":"questions". If a question needs a shared passage, table or instruction to make sense, put that in "context" (keep it complete). Pick the subject from exactly one of: ${[...$("#qSubject").options].slice(1).map(o => o.value).join(", ")}.
+Reply with only JSON like {"title":"Κλάσματα σελ. 45","subject":"Mathematics (Μαθηματικά)","kind":"questions","context":"","questions":["1. Να απλοποιήσετε το κλάσμα 15/25","2. Να βρείτε το ΕΚΠ των 6 και 8"]}
 title: at most 5 words, in the assignment's language. Keep questions in their original language. Do not answer the questions.
 
 Homework:
@@ -1037,19 +1068,20 @@ ${text || "(see the photo)"}`, photo ? { images: photo } : {});
   }
   if (!parsed && !text) { status.textContent = "Paste the homework as text so the page can read it."; btn.disabled = false; return; }
   const questions = parsed ? parsed.questions.map(x => String(typeof x === "object" ? x.text ?? "" : x).trim()).filter(Boolean) : splitLocally(text);
+  const kind = parsed ? (parsed.kind === "learn" ? "learn" : "questions") : looksLikeLearn(text, questions) ? "learn" : "questions";
   const firstLine = (text.split("\n").find(l => l.trim()) || "New homework").trim();
   const q = {
     id: uid(), title: String(parsed?.title || firstLine).slice(0, 60),
     subject: $("#qSubject").value || String(parsed?.subject || "Other").slice(0, 30),
     due: $("#qDue").value,
     notes: ((parsed?.context ? parsed.context + "\n\n" : "") + (text || questions.join("\n"))).slice(0, 6000),
-    steps: questions.slice(0, 40).map(t => ({ id: uid(), text: t.slice(0, 600), min: 10, done: false, chat: [] }))
+    steps: questions.slice(0, 40).map(t => ({ id: uid(), text: t.slice(0, kind === "learn" ? 3000 : 600), min: 10, done: false, chat: [], kind }))
   };
   S.quests.unshift(q); S.active = q.id; save();
   e.target.reset(); photo = null; $("#photoName").textContent = "";
   btn.disabled = false; status.textContent = "";
   renderQuests();
-  toast(`Quest ready: ${q.steps.length} question${q.steps.length === 1 ? "" : "s"}. Press Guide me to start!`);
+  toast(kind === "learn" ? `Ready to learn: ${q.steps.length} part${q.steps.length === 1 ? "" : "s"}. Press Learn it to start!` : `Quest ready: ${q.steps.length} question${q.steps.length === 1 ? "" : "s"}. Press Guide me to start!`);
 });
 
 /* ---------- AI (Claude sample) ---------- */
@@ -1167,13 +1199,72 @@ async function quiz(question, q, btn) {
 /* ---------- Guided solve ---------- */
 const SOLVED = "[SOLVED]";
 const clean = t => t.split(SOLVED).join("").trim();
+/* ---------- Translate ---------- */
+const isGreek = t => { const L = String(t).match(/\p{L}/gu) || []; const g = L.filter(c => /[Ͱ-Ͽἀ-῿]/.test(c)).length; return L.length > 0 && g / L.length > 0.3; };
+async function translateText(text, img, onText) {
+  await aiReady;
+  if (!sample) throw { code: "not_granted" };
+  const toEn = img ? true : isGreek(text);
+  const prompt = `Translate for ${S.name}, a 12-year-old in a Greek school (${GRADE_NAME[S.grade]}) who is still learning Greek.
+${toEn
+    ? `Translate it into clear, simple English. Keep numbers, maths and the numbering and line breaks as they are.
+Then add a line "**Key Greek words**" and up to 8 bullets with the most useful words or phrases from the text, each as: Greek word (how to say it in Latin letters) — English meaning.`
+    : `Translate it into simple, natural Modern Greek. Keep numbers, maths and the numbering and line breaks as they are.`}
+Reply with only the translation in plain Markdown, with no introduction and no LaTeX.
+${img ? "The text to translate is in the attached image." : "\nTEXT:\n" + String(text).slice(0, 6000)}`;
+  const { text: out } = await sample(prompt, { ...(img ? { images: img } : {}), onText: onText ? ({ text }) => onText(text) : undefined, cache: { gcTime: 864e5 } });
+  return out;
+}
+/* opts: { text: () => string, img?: () => Promise<Blob>|null, get: () => cached, set: v => void } */
+function transWidget(opts) {
+  const box = el("div", { class: "answer trans", hidden: true });
+  const label = () => isGreek(opts.text() || "") || (!opts.text() && opts.img) ? "Translate to English" : "Μετάφραση στα Ελληνικά";
+  const btn = el("button", { class: "btn ghost small", type: "button" }, label());
+  btn.onclick = async () => {
+    if (!box.hidden) { box.hidden = true; btn.textContent = label(); return; }
+    box.hidden = false; btn.textContent = "Hide translation";
+    const cached = opts.get?.();
+    if (cached) { box.innerHTML = md(cached); return; }
+    box.innerHTML = "<p class='muted'>Translating…</p>"; btn.disabled = true;
+    try {
+      const img = opts.img ? await opts.img() : null;
+      const out = await translateText(opts.text(), img, t => box.innerHTML = md(t));
+      box.innerHTML = md(out); opts.set?.(out);
+    } catch (e) { box.innerHTML = `<p class="muted">${esc(aiErr(e))}</p>`; }
+    finally { btn.disabled = false; }
+  };
+  return el("div", { class: "trans-wrap" }, btn, box);
+}
+function buddyBubble(t) {
+  const a = Object.assign(el("div", { class: "answer" }), { innerHTML: md(clean(t.content)) });
+  return el("div", { class: "bubble-wrap" }, a, transWidget({ text: () => clean(t.content), get: () => t.tr, set: v => { t.tr = v; save(); } }));
+}
+
 let gctl = null, guiding = false, guideImgFor = null;
-document.querySelectorAll(".lang button").forEach(b => b.onclick = () => { S.helpLang = b.dataset.lang; save(); renderGuide(); });
+document.querySelectorAll(".lang button").forEach(b => b.onclick = () => {
+  if (S.helpLang === b.dataset.lang) return;
+  S.helpLang = b.dataset.lang; save(); renderGuide();
+  toast(S.helpLang === "Greek" ? "Από τώρα ο Buddy θα σου απαντά στα Ελληνικά. Πάτα «Translate» κάτω από παλιές απαντήσεις για μετάφραση." : "From now on Buddy answers in English. Press Translate under any answer to see it in the other language.");
+});
 function guideTarget() {
   const q = findQ(S.guide?.qid); const s = q?.steps.find(x => x.id === S.guide.sid);
   return q && s ? [q, s] : [null, null];
 }
+function learnRules(q, s) {
+  const en = S.helpLang !== "Greek";
+  return `${tutorRules()}
+Right now there is NOTHING TO SOLVE: you are TEACHING ${S.name} a piece of their school material, like a friendly teacher who makes it easy and interesting.
+- In your first reply: (1) what this text is about, in 2-3 simple sentences; (2) the 3-5 most important ideas as short bullets; (3) ${en ? "**Key Greek words**: up to 6 important Greek words or phrases from the text, each with (how to say it in Latin letters) and its English meaning" : "**Δύσκολες λέξεις**: έως 6 λέξεις από το κείμενο με απλή εξήγηση"}; (4) ONE easy question to check they understood.
+- Every reply: at most about 170 words.
+- When they answer a check question, say kindly whether it is right and explain briefly, then ask ONE new check question about a different idea. After they have answered 2 check questions correctly, praise them and put ${SOLVED} alone on the last line.
+- "Explain it simpler": use very simple words and an everyday example. "Key words": list the important words with meanings. "Quiz me": ask one new question about the text.
+- If it is a poem or literature, also explain feelings, message and any old or difficult words.
+${q.notes ? "\nThe full material, for context:\n" + q.notes.slice(0, 3000) + "\n" : ""}
+THE TEXT TO TEACH NOW:
+${s.text}${s.fromBook ? "\n(An image of this part of their book is attached; use it for pictures, maps or tables.)" : ""}`;
+}
 function guideRules(q, s) {
+  if (s.kind === "learn") return learnRules(q, s);
   return `${tutorRules()}
 Right now you are guiding ${S.name} through ONE homework question, like a patient teacher sitting beside them.
 - NEVER give the final answer to this question, even if they ask or beg. Guide with small steps and questions so they work it out themselves.
@@ -1191,7 +1282,10 @@ function openGuide(qid, sid) {
   S.guide = { qid, sid }; navQ = qid; buddyQ = qid; save();
   showTab("buddy");
   const [, s] = guideTarget();
-  if (s && !s.chat.length) guideSend("Let's start this question. What is it asking me to do, and what's the first small step?", "Let's start!");
+  if (s && !s.chat.length) {
+    if (s.kind === "learn") guideSend("Teach me this. What is it about, and what are the important ideas?", "Teach me!");
+    else guideSend("Let's start this question. What is it asking me to do, and what's the first small step?", "Let's start!");
+  }
   else $("#guideInput").focus();
 }
 function renderGuide() {
@@ -1211,6 +1305,7 @@ function renderGuide() {
   $("#guideWhere").textContent = `${q.title} · Question ${idx + 1} of ${q.steps.length}`;
   $("#guideQ").textContent = (s.intro ? s.intro + "\n" : "") + s.text;
   if (guideImgFor !== s.id) {
+    $("#guideTrans").replaceChildren(transWidget({ text: () => (s.intro ? s.intro + "\n" : "") + s.text, img: () => s.fromBook && !s.text.trim() ? fget("crop:" + s.id) : null, get: () => s.trans, set: v => { s.trans = v; save(); } }));
     guideImgFor = s.id; const img = $("#guideImg"); img.hidden = true;
     if (img.src) URL.revokeObjectURL(img.src), img.removeAttribute("src");
     if (s.fromBook) fget("crop:" + s.id).then(bl => { if (bl && guideImgFor === s.id) { img.src = URL.createObjectURL(bl); img.hidden = false; } });
@@ -1219,8 +1314,15 @@ function renderGuide() {
   if (!guiding) {
     $("#guideChat").replaceChildren(...s.chat.map(t => t.role === "user"
       ? el("div", { class: "bubble-me" }, t.show || t.content)
-      : Object.assign(el("div", { class: "answer" }), { innerHTML: md(clean(t.content)) })));
+      : buddyBubble(t)));
   }
+  const learn = s.kind === "learn", A = learn ? L_ASKS : G_ASKS;
+  $("#guideHead").textContent = learn ? "Learn it" : "Guided solve";
+  document.querySelectorAll("[data-g]").forEach(b => b.textContent = A[b.dataset.g][1]);
+  $("#guideSubmit").textContent = learn ? "Send my answer" : "Check my work";
+  $("#guideInputLbl").textContent = learn ? "Your answer to Buddy's question" : "Your answer or what you tried";
+  $("#restartGuide").textContent = learn ? "Start this part over" : "Start this question over";
+  $("#markDoneGuide").textContent = learn ? "I understand it ✓" : "I finished it myself ✓";
   $("#solvedBanner").hidden = !(s.solved && !s.done);
   $("#markDoneGuide").hidden = s.done;
   $("#nextQ").hidden = !q.steps.some(x => !x.done && x !== s);
@@ -1271,7 +1373,15 @@ const G_ASKS = {
   meaning: ["I don't understand what this question means. Explain it in simpler words.", "What does it mean?"],
   example: ["Show me a similar example solved step by step, so I can see how to do mine.", "Show a similar example"]
 };
-document.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { if (!guiding) guideSend(...G_ASKS[b.dataset.g]); });
+const L_ASKS = {
+  hint: ["I don't get it yet. Explain it simpler, with an everyday example.", "Explain it simpler"],
+  meaning: ["Give me the key words from this text with their meanings.", "Key words"],
+  example: ["Quiz me: ask me one new question about this text.", "Quiz me"]
+};
+document.querySelectorAll("[data-g]").forEach(b => b.onclick = () => {
+  if (guiding) return; const [, s] = guideTarget();
+  guideSend(...(s?.kind === "learn" ? L_ASKS : G_ASKS)[b.dataset.g]);
+});
 function finishGuided(btn) {
   const [q, s] = guideTarget(); if (!s || s.done) return;
   toggleStep(q, s, btn);
@@ -1608,6 +1718,19 @@ function endDrag() {
 layer.addEventListener("pointerup", endDrag);
 layer.addEventListener("pointercancel", () => { drag?.d.remove(); drag = null; });
 $("#hlCancel").onclick = clearPending;
+$("#pageTransClose").onclick = () => { $("#pageTransBox").hidden = true; };
+$("#hlTrans").onclick = async () => {
+  const pend = R.pending; if (!pend) return;
+  const text = textIn(pend.r, R.items), box = $("#pageTrans"), btn = $("#hlTrans");
+  const crop = text ? null : await cropOf(pend.r).catch(() => null);
+  await aiReady;
+  if (!text && !imgOK) { toast(sample ? "Study Buddy can't read pictures here, so it can't translate this photo." : "Translate needs Study Buddy, which works inside Claude."); return; }
+  $("#pageTransBox").hidden = false; box.innerHTML = "<p class='muted'>Translating…</p>"; btn.disabled = true;
+  $("#pageTransBox").scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+  try { const out = await translateText(text, crop, t => box.innerHTML = md(t)); box.innerHTML = md(out); }
+  catch (e) { box.innerHTML = `<p class="muted">${esc(aiErr(e))}</p>`; }
+  finally { btn.disabled = false; }
+};
 $("#hlToggle").onclick = () => {
   R.drawing = !R.drawing; layer.classList.toggle("drawing", R.drawing); clearPending();
   $("#hlToggle").textContent = R.drawing ? "Highlighter: ON" : "Highlighter: OFF (scroll)";
@@ -1649,13 +1772,14 @@ $("#solveBtn").onclick = async () => {
     if (sample && (text || (imgOK && crop))) {
       parsed = await sample.json(`A student in ${gradeDesc()} highlighted part of a page in their school book "${b.title}" (${b.subject}), page ${R.page}. The book is in Greek.
 ${imgOK && crop ? "The attached image shows exactly the part they highlighted.\n" : ""}${text ? "Text inside the highlight:\n" + text + "\n" : ""}${pageText ? "\nThe rest of the page, only for context (an exercise heading or instruction like «Να υπολογίσετε» may be here):\n" + pageText + "\n" : ""}
+If the highlight is material to READ AND LEARN with nothing to answer (theory, a passage, a history or literature text, a definition box), set "kind":"learn" and put the highlighted text in "questions" as 1 to 4 sections, word for word. Otherwise set "kind":"questions" and do the following.
 List every separate question or exercise inside the highlight, exactly as written (in Greek), keeping its number or letter. If an exercise has parts (α, β, γ) that are answered separately, make each part its own question and put the exercise number in front (e.g. "1α) 12/18"). If they need an instruction that is outside the highlight, put it in "instructions". If a question needs a figure or table, add a short description of it in square brackets. Do not answer anything.
-Reply with only JSON like {"instructions":"Να απλοποιήσετε τα κλάσματα:","questions":["1α) 12/18","1β) 20/35"]}`, imgOK && crop ? { images: crop } : {});
+Reply with only JSON like {"kind":"questions","instructions":"Να απλοποιήσετε τα κλάσματα:","questions":["1α) 12/18","1β) 20/35"]}`, imgOK && crop ? { images: crop } : {});
     }
-  } catch (e) { if (!text) { toast(aiErr(e)); btn.disabled = false; btn.textContent = "Solve this with Buddy"; return; } }
+  } catch (e) { if (!text) { toast(aiErr(e)); btn.disabled = false; btn.textContent = "Help me with this"; return; } }
   let questions = Array.isArray(parsed?.questions) ? parsed.questions.map(x => String(typeof x === "object" ? x?.text ?? "" : x).trim()).filter(Boolean) : null;
   if (!questions?.length) questions = text ? splitLocally(text) : null;
-  btn.disabled = false; btn.textContent = "Solve this with Buddy";
+  btn.disabled = false; btn.textContent = "Help me with this";
   if (!questions?.length) {
     toast(sample ? "Buddy couldn't read that part. Try a slightly bigger highlight." : "Study Buddy needs to be switched on to read photos of pages.");
     return;
@@ -1663,7 +1787,8 @@ Reply with only JSON like {"instructions":"Να απλοποιήσετε τα κ
   const instr = String(parsed?.instructions || "").trim().slice(0, 300);
   let q = S.quests.find(x => x.bookId === b.id && x.page === R.page);
   if (!q) { q = { id: uid(), title: `${b.title} · p. ${R.page}`, subject: b.subject, due: "", notes: "", steps: [], bookId: b.id, page: R.page }; S.quests.unshift(q); }
-  const steps = questions.slice(0, 20).map(t => ({ id: uid(), text: t.slice(0, 600), min: 10, done: false, chat: [], intro: instr, fromBook: !!crop }));
+  const kind = parsed ? (parsed.kind === "learn" ? "learn" : "questions") : looksLikeLearn(text, questions) ? "learn" : "questions";
+  const steps = questions.slice(0, 20).map(t => ({ id: uid(), text: t.slice(0, kind === "learn" ? 3000 : 600), min: 10, done: false, chat: [], intro: kind === "learn" ? "" : instr, fromBook: !!crop, kind }));
   q.steps.push(...steps); q.cleared = false;
   q.notes = (q.notes + "\n" + (instr ? instr + "\n" : "") + questions.join("\n")).trim().slice(-6000);
   if (crop) for (const s of steps) await fput("crop:" + s.id, crop);
@@ -1726,7 +1851,7 @@ function workSummary(qs, budget = 18000) {
     out += `\n## ${q.title} (${subjShort(q.subject)})\n`;
     for (const s of q.steps) {
       const help = (s.chat || []).filter(t => t.role === "assistant").map(t => clean(t.content)).join(" ").replace(/\s+/g, " ").slice(0, 500);
-      out += `- Question: ${(s.intro ? s.intro + " " : "") + s.text}${s.done ? " (solved)" : ""}${help ? `\n  How it was solved: ${help}` : ""}\n`;
+      out += `- ${s.kind === "learn" ? "[learn] Text: " : "Question: "}${(s.intro ? s.intro + " " : "") + s.text.slice(0, 1200)}${s.done ? " (solved)" : ""}${help ? `\n  How it was solved: ${help}` : ""}\n`;
       if (out.length > budget) return out.slice(0, budget);
     }
   }
@@ -1741,7 +1866,7 @@ async function makeTest(qs, focus) {
   btn.disabled = true; st.textContent = "Buddy is writing your test… (this can take a minute)";
   try {
     const data = await sample.json(`Create a practice test of ${n} questions for ${S.name}, a ${gradeDesc()} student in Greece preparing for a school test.
-Base it ONLY on the skills and topics in the homework below, which they already did. Write NEW questions (different numbers, words or examples) that test the same skills, like a real Greek school test: start easy, get harder, spread across all the assignments, and add one or two that combine skills.${focus ? `\nFocus especially on these weak spots: ${focus}` : ""}
+Base it ONLY on the skills and topics in the homework below, which they already did. For reading material (marked [learn]), ask about its key ideas, facts and words. Write NEW questions (different numbers, words or examples) that test the same skills, like a real Greek school test: start easy, get harder, spread across all the assignments, and add one or two that combine skills.${focus ? `\nFocus especially on these weak spots: ${focus}` : ""}
 Write the questions and choices in ${lang === "Greek" ? "Greek" : "English"}. Write "topic" and "explain" in ${S.helpLang === "Greek" ? "Greek" : "English"}.
 Mix two types: about half "mc" (exactly 4 choices, one correct, plausible wrong choices based on common mistakes) and half "short" (answered with a number, word or short phrase; give the expected answer).
 "explain": one or two sentences showing how to get the right answer.
@@ -1771,6 +1896,7 @@ function renderRunner() {
   $("#testProg").textContent = `Question ${t.i + 1} of ${n}`;
   $("#testBar").style.width = ((t.i) / n * 100) + "%";
   $("#testQ").textContent = it.q;
+  $("#testTrans").replaceChildren(transWidget({ text: () => it.q + (it.choices ? "\n" + it.choices.map((c, i) => `${"ΑΒΓΔΕ"[i] || i + 1}) ${c}`).join("\n") : ""), get: () => it.tr, set: v => { it.tr = v; save(); } }));
   const box = $("#testAnswer");
   if (it.type === "mc") {
     box.replaceChildren(...it.choices.map((c, ci) => el("button", { class: "choice" + (it.given === ci ? " picked" : ""), "aria-pressed": it.given === ci, onclick: () => { it.given = ci; save(); renderRunner(); beep(SFX.tick); } }, `${"ΑΒΓΔΕ"[ci] || ci + 1}) ${c}`)));
@@ -1854,7 +1980,7 @@ function renderReview() {
   $("#reviewList").replaceChildren(...q.steps.map((s, i) => {
     const chat = el("div", { class: "chat" }, ...(s.chat || []).map(t => t.role === "user"
       ? el("div", { class: "bubble-me" }, t.show || t.content.replace(/^Here is my work or answer:\n/, ""))
-      : Object.assign(el("div", { class: "answer" }), { innerHTML: md(clean(t.content)) })));
+      : buddyBubble(t)));
     return el("details", { class: "rq" },
       el("summary", {}, `${s.done ? "✓ " : ""}${(s.intro ? s.intro + "\n" : "") + s.text}`),
       (s.chat || []).length ? chat : el("p", { class: "muted" }, "No Buddy help on this one."),
@@ -2022,11 +2148,11 @@ $("#arenaGo").onclick = async () => {
   if (!pairs.length) { $("#arenaStatus").textContent = "The homework for this boss was deleted. Solve something new today!"; return; }
   const summary = pairs.map(({ q, s }) => {
     const help = (s.chat || []).filter(t => t.role === "assistant").map(t => clean(t.content)).join(" ").replace(/\s+/g, " ").slice(0, 400);
-    return `- (${subjShort(q.subject)}) ${(s.intro ? s.intro + " " : "") + s.text}${help ? `\n  How it was solved: ${help}` : ""}`;
+    return `- (${subjShort(q.subject)})${s.kind === "learn" ? " [learn]" : ""} ${(s.intro ? s.intro + " " : "") + s.text.slice(0, 1200)}${help ? `\n  How it was solved: ${help}` : ""}`;
   }).join("\n").slice(0, 14000);
   const btn = $("#arenaGo"); btn.disabled = true; $("#arenaStatus").textContent = "The boss is getting ready… (this can take a minute)";
   try {
-    const data = await sample.json(`Make a 5-question daily quiz for ${S.name}, a ${gradeDesc()} student in Greece. It checks they remember how to do the homework below, which they solved recently. Write NEW questions that are very similar (same skill, different numbers or examples), from easy to a bit harder. Keep each question short and clear.
+    const data = await sample.json(`Make a 5-question daily quiz for ${S.name}, a ${gradeDesc()} student in Greece. It checks they remember how to do the homework below, which they solved recently. For reading material (marked [learn]), ask about its key ideas, facts and words. Write NEW questions that are very similar (same skill, different numbers or examples), from easy to a bit harder. Keep each question short and clear.
 Write the questions and choices in the same language as the homework (usually Greek). Write "hint" and "explain" in ${S.helpLang === "Greek" ? "Greek" : "English"}.
 Mix "mc" (exactly 4 choices, one correct, wrong choices from common mistakes) and "short" (answer is a number, word or short phrase; give the expected answer).
 "hint": one sentence that helps without giving the answer. "explain": one or two sentences showing how to get the answer.
@@ -2047,6 +2173,7 @@ function renderArenaQ() {
   const d = S.daily, it = d.items[d.idx];
   $("#arenaProg").textContent = `Weak spot ${d.idx + 1} of ${d.items.length}`;
   $("#arenaQ").textContent = it.q;
+  $("#arenaTrans").replaceChildren(transWidget({ text: () => it.q + (it.choices ? "\n" + it.choices.map((c, i) => `${"ΑΒΓΔ"[i] || i + 1}) ${c}`).join("\n") : ""), get: () => it.tr, set: v => { it.tr = v; save(); } }));
   $("#arenaHint").hidden = !it.tries; if (it.tries) $("#arenaHint").textContent = "Hint: " + it.hint;
   arenaPick = null;
   if (it.type === "mc") {
